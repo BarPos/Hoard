@@ -1,0 +1,14 @@
+<Project>
+  <!--
+    SDK 10.0.301 pins the Native AOT compiler to 10.0.9, which has a high-severity advisory
+    (GHSA-p3jp-9v83-76w9, NuGet warning NU1903). Use the patched compiler and its matching
+    NativeAOT runtime pack. Remove this once the installed SDK bundles 10.0.15 or newer.
+  -->
+  <PropertyGroup>
+    <HoardILCompilerVersion>10.0.15</HoardILCompilerVersion>
+  </PropertyGroup>
+  <!-- Only applies while the SDK bundles an older runtime; a newer SDK makes this a no-op. -->
+  <ItemGroup Condition="$([MSBuild]::VersionLessThan('$(BundledNETCoreAppPackageVersion)', '$(HoardILCompilerVersion)'))">
+    <KnownILCompilerPack Update="Microsoft.DotNet.ILCompiler" ILCompilerPackVersion="$(HoardILCompilerVersion)" />
+  </ItemGroup>
+</Project>

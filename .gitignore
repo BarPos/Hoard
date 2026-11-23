@@ -1,0 +1,20 @@
+# Claude Code personal settings
+.claude/settings.local.json
+
+# .NET build output
+bin/
+obj/
+artifacts/
+*.user
+*.suo
+.vs/
+.idea/
+TestResults/
+BenchmarkDotNet.Artifacts/
+
+# OS
+.DS_Store
+
+# publish output and spikes
+out/
+publish/

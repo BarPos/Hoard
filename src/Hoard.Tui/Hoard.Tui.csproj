@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The interactive TUI (plan.md §7). Rendering is written against ICanvas so it can be
+       snapshot-tested without a terminal; Terminal.Gui only supplies the driver, input and timers. -->
+  <PropertyGroup>
+    <IsAotCompatible>true</IsAotCompatible>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Terminal.Gui" Version="2.6.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Hoard.Core\Hoard.Core.csproj" />
+    <ProjectReference Include="..\Hoard.Platform\Hoard.Platform.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Hoard.Tui.Tests" />
+  </ItemGroup>
+</Project>

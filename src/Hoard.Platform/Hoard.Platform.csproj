@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Per-OS file-system probes (lstat etc.) behind Hoard.Core interfaces. -->
+  <PropertyGroup>
+    <IsAotCompatible>true</IsAotCompatible>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Hoard.Core\Hoard.Core.csproj" />
+  </ItemGroup>
+</Project>
