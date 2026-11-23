@@ -607,7 +607,7 @@ public static partial class Screens
         int w = Math.Min(c.Width - 4, 58), h = rows.Length + 4;
         int x0 = (c.Width - w) / 2, y0 = Math.Max(1, (c.Height - h) / 2);
         c.Fill(x0, y0, w, h, new Style(t.Text, t.Panel));
-        p.HLine(x0, y0, w, '╭', '╮', "Keys", "any key closes");
+        p.HLine(x0, y0, w, '╭', '╮', $"Hoard {Hoard.Core.AppInfo.Version} · keys", "any key closes");
         for (int i = 1; i < h - 1; i++)
         {
             p.Text(x0, y0 + i, "│", t.Border, t.Panel);

@@ -66,6 +66,13 @@ public class BrowserTests(Fixture f) : IClassFixture<Fixture>
         return c;
     }
 
+    private static string RepoRoot()
+    {
+        string? d = AppContext.BaseDirectory;
+        while (d is not null && !File.Exists(Path.Combine(d, "VERSION"))) d = Path.GetDirectoryName(d);
+        return d ?? throw new InvalidOperationException("VERSION file not found above the test folder");
+    }
+
     private static int RowOf(MemoryCanvas c, string text) =>
         Enumerable.Range(0, c.Height).First(y => c.Row(y).Contains(text, StringComparison.Ordinal));
 
@@ -211,6 +218,9 @@ public class BrowserTests(Fixture f) : IClassFixture<Fixture>
         var ctl = new BrowserController(m, new FakeShell());
         ctl.Apply(Cmd.Help, 10);
         Assert.Contains("any key closes", Render(m).ToString());
+        Assert.Contains($"Hoard {Hoard.Core.AppInfo.Version} · keys", Render(m).ToString());
+        Assert.Matches(@"^\d+\.\d+\.\d+", Hoard.Core.AppInfo.Version);
+        Assert.Equal(File.ReadAllText(Path.Combine(RepoRoot(), "VERSION")).Trim(), Hoard.Core.AppInfo.Version);
         ctl.Apply(Cmd.Down, 10);
         Assert.False(m.HelpOpen);
         Assert.Equal(0, m.Selected); // the key only closed help

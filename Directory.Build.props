@@ -8,6 +8,12 @@
     <!-- NuGet security advisories stay visible as warnings but don't block the build. -->
     <WarningsNotAsErrors>$(WarningsNotAsErrors);NU1901;NU1902;NU1903;NU1904</WarningsNotAsErrors>
     <InvariantGlobalization>true</InvariantGlobalization>
-    <Version>0.1.0-dev</Version>
+    <!-- The single source of the version: the VERSION file at the repo root (used by the app,
+         the version option, release archive names and the release tag). -->
+    <HoardVersion>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)VERSION').Trim())</HoardVersion>
+    <Version>$(HoardVersion)</Version>
+    <InformationalVersion>$(HoardVersion)</InformationalVersion>
+    <!-- Keep the reported version clean (no "+commit" suffix). -->
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
 </Project>

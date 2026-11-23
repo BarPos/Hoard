@@ -178,7 +178,7 @@ static JsonReport BuildJson(ScanResult r, int topN, bool apparent)
         s.Name(id), r.RootPath.TrimEnd('/') + "/" + s.Name(id), Kind(s.Kind(id)),
         s.Size(id), s.Apparent(id), s.Kind(id) == NodeKind.Directory ? s.Files(id) : 1)).ToList();
     var rest = kids.Skip(topN).ToList();
-    return new JsonReport("0.1.0", r.RootPath, r.ScannedAt, apparent ? "apparent" : "onDisk", r.ExactSizes, r.ProbeName,
+    return new JsonReport(Hoard.Core.AppInfo.Version, r.RootPath, r.ScannedAt, apparent ? "apparent" : "onDisk", r.ExactSizes, r.ProbeName,
         Math.Round(r.Elapsed.TotalSeconds, 3), s.Size(NodeStore.Root), s.Apparent(NodeStore.Root),
         s.Files(NodeStore.Root), s.Dirs(NodeStore.Root), r.HardLinkDuplicates, r.HardLinkBytesSaved, r.Cancelled,
         shown, rest.Count, rest.Sum(id => SizeOf(s, id, apparent)),

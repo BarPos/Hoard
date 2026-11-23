@@ -1,0 +1,40 @@
+# Builds and tests every push and pull request on macOS / Apple Silicon.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Build and test (macOS arm64)
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET (version from global.json)
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Test
+        run: dotnet test -c Release
+
+      - name: Package (smoke test of the release build)
+        run: build/package.sh
+
+      - name: Upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: hoard-macos-arm64
+          path: dist/*
+          retention-days: 14

@@ -18,3 +18,7 @@ BenchmarkDotNet.Artifacts/
 # publish output and spikes
 out/
 publish/
+
+# build output
+out/
+dist/
