@@ -1,7 +1,7 @@
-# Manual release: Actions → Release → Run workflow.
+# Manual release: Actions → Release → Run workflow. Nothing runs automatically.
 #
 # Reads the version from the VERSION file, tests, builds the macOS (Apple Silicon) binary,
-# and publishes a GitHub release tagged v<VERSION> with the archive and its SHA-256.
+# and publishes a GitHub release tagged v<VERSION> with the archive, its SHA-256 and install.sh.
 # To release a new version: bump VERSION, push to main, run this workflow.
 name: Release
 
@@ -61,6 +61,9 @@ jobs:
       - name: Build and package
         run: build/package.sh
 
+      - name: Check the installer
+        run: bash -n install.sh && /bin/bash -n install.sh
+
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -76,8 +79,10 @@ jobs:
           ## Install or update
 
           \`\`\`bash
-          curl -fsSL https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/main/install.sh | bash
+          curl -fsSL https://github.com/${GITHUB_REPOSITORY}/releases/latest/download/install.sh | bash
           \`\`\`
+
+          The installer (\`install.sh\`, attached below) can also update, install a specific version or uninstall.
 
           macOS on Apple Silicon only. Manual install: download \`hoard-${VERSION}-macos-arm64.tar.gz\`,
           check it with \`shasum -a 256 -c hoard-${VERSION}-macos-arm64.tar.gz.sha256\`, and put \`hoard\` on your PATH.
@@ -85,6 +90,7 @@ jobs:
           gh release create "v$VERSION" \
             dist/hoard-"$VERSION"-macos-arm64.tar.gz \
             dist/hoard-"$VERSION"-macos-arm64.tar.gz.sha256 \
+            install.sh \
             --target "$GITHUB_SHA" \
             --title "Hoard $VERSION" \
             --notes-file notes.md \

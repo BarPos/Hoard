@@ -2,7 +2,9 @@
 # ──────────────────────────────────────────────────────────────────────────────
 #  Hoard installer · macOS on Apple Silicon
 #
-#    curl -fsSL https://raw.githubusercontent.com/BarPos/Hoard/main/install.sh | bash
+#    curl -fsSL https://github.com/BarPos/Hoard/releases/latest/download/install.sh | bash
+#
+#  (This script is attached to every release; the copy in the repo is the same.)
 #
 #  Run without arguments for an interactive menu, or use a command:
 #
