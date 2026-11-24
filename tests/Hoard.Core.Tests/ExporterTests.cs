@@ -111,6 +111,17 @@ public sealed class ExporterTests : IDisposable
     }
 
     [Fact]
+    public void Pretty_html_with_depth_everything_goes_all_the_way_down()
+    {
+        using var t = new TempTree();
+        t.File("l1/l2/l3/l4/l5/l6/l7/l8/deepest.bin", 10_000);
+        ScanResult r = new Scanner(FileProbes.ForCurrentPlatform()).Scan(t.Root);
+        var data = new ExportData { Store = r.Store, RootPath = r.RootPath, Roots = [NodeStore.Root] };
+        Assert.Contains("\"deepest.bin\"", Exporter.WriteToString(data, new ExportOptions(ExportFormat.PrettyHtml, 0)));
+        Assert.DoesNotContain("\"deepest.bin\"", Exporter.WriteToString(data, new ExportOptions(ExportFormat.PrettyHtml, 3)));
+    }
+
+    [Fact]
     public void Pretty_html_is_filled_in_and_its_script_parses()
     {
         string html = Out(ExportFormat.PrettyHtml);

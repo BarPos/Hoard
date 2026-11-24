@@ -508,7 +508,6 @@ public static class Exporter
                            ?? throw new InvalidOperationException("the report template is missing from the build");
         string template = new StreamReader(res).ReadToEnd();
         NodeStore s = d.Store;
-        o = o with { Depth = o.Depth == 0 ? 6 : o.Depth };
         int root = d.Roots.Count == 1 ? d.Roots[0] : NodeStore.Root;
         var junkKind = new Dictionary<int, string>();
         foreach (JunkCategory c in d.Junk?.Categories ?? [])
@@ -544,7 +543,7 @@ public static class Exporter
             {
                 js.Append(",junk:\"").Append(jk).Append('"');
             }
-            if (s.Kind(id) == NodeKind.Directory && level < o.Depth)
+            if (s.Kind(id) == NodeKind.Directory && (o.Depth == 0 || level < o.Depth))
             {
                 var (kids, other, otherSize) = Kids(d, o with { MinSize = Math.Max(o.MinSize, 1) }, id);
                 if (kids.Count > 0 || other > 0)

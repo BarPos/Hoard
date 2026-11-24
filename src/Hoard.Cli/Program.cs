@@ -24,7 +24,7 @@ var theme = new Option<string>("--theme") { Description = $"Colour theme: {Hoard
 var stats = new Option<bool>("--stats") { Description = "Print scanner statistics (nodes, memory, throughput) to stderr" };
 var export = new Option<string>("--export") { Description = "Write a report instead of a summary: json, csv, html, pretty-html, markdown or ncdu" };
 var output = new Option<string>("--output", "-o") { Description = "File for --export (default: standard output)" };
-var depth = new Option<int>("--depth") { Description = "Levels of folders in an export (0 = all; pretty-html defaults to 6)" };
+var depth = new Option<int>("--depth") { Description = "Levels of folders in an export (0 = all)" };
 var minSize = new Option<string>("--min-size") { Description = "Leave out entries smaller than this in an export, e.g. 1MB" };
 var foldersOnly = new Option<bool>("--folders-only") { Description = "Exports list folders only, not files" };
 var dupes = new Option<bool>("--dupes") { Description = "Also look for duplicate files for the export (reads file contents)" };

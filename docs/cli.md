@@ -21,7 +21,7 @@ hoard ~ --json > scan.json  # the same, as JSON
 | `--json` | write the summary as JSON |
 | `--export FORMAT` | write a report: `json`, `csv`, `html`, `pretty-html`, `markdown` or `ncdu` |
 | `-o`, `--output FILE` | where `--export` writes (default: standard output) |
-| `--depth N` | folder levels in an export (0 = all; pretty HTML defaults to 6) |
+| `--depth N` | folder levels in an export (0 = all) |
 | `--min-size SIZE` | leave smaller entries out of an export, e.g. `1MB` |
 | `--folders-only` | exports list folders only, not files |
 | `--dupes` | include duplicates in the export (reads file contents) |

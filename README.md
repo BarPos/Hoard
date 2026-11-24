@@ -97,4 +97,4 @@ Releases are made by hand: bump `VERSION`, push, then run **Actions → Release*
 
 ## Status
 
-Version 1.0.3. Hoard supports macOS on Apple Silicon. The code is written with Linux and Windows in mind, but they aren't built or tested yet. Third-party licences are listed in [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt).
+Version 1.0.4. Hoard supports macOS on Apple Silicon. The code is written with Linux and Windows in mind, but they aren't built or tested yet. Third-party licences are listed in [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt).
