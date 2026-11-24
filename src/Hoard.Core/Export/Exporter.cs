@@ -560,7 +560,8 @@ public static class Exporter
                     long extraSize = otherSize + kids.Skip(60).Sum(c => SizeOf(d, o, c));
                     if (extra > 0 && extraSize > 0)
                     {
-                        js.Append("{n:").Append(Js($"other ({extra} items)")).Append(",s:").Append(extraSize).Append(",age:\"warn\"},");
+                        // Its own colour: at the top level there's no parent colour to inherit.
+                        js.Append("{n:").Append(Js($"other ({extra} items)")).Append(",s:").Append(extraSize).Append(",age:\"warn\",col:\"#8a8a8a\"},");
                     }
                     js.Append(']');
                 }

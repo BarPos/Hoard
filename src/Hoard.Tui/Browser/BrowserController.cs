@@ -92,6 +92,7 @@ public sealed class BrowserController(BrowserModel model, IShell shell, Deleter?
     /// <summary>The last delete that went to the Trash, for undo (<c>u</c>).</summary>
     public DeleteReport? LastDelete { get; private set; }
     private Task<DeleteReport>? _running;
+    private DeleteDialog? _runningDialog;
     /// <summary>What was on screen last frame; the treemap needs it to move between blocks.</summary>
     public HitMap LastHits { get; set; } = new();
 
@@ -417,10 +418,18 @@ public sealed class BrowserController(BrowserModel model, IShell shell, Deleter?
     /// <summary>Call regularly: opens the delete dialog once the byte comparison of duplicates is done.</summary>
     public bool PollDupVerify()
     {
-        if (Model.PollDupVerify() is not { } r)
+        // While another dialog is open or a delete is running, the result waits: it must never
+        // replace a dialog the user is looking at, or one that's in the middle of deleting.
+        if (Model.Dialog is not null || _running is not null || Model.PollDupVerify() is not { } r)
         {
             return false;
         }
+        if (Model.View != ViewKind.Dupes)
+        {
+            Model.ShowToast("the duplicate check finished · press d in Dupes (6) to delete the copies");
+            return true;
+        }
+        r = (r.Ok.Where(id => !Model.Store.IsDeleted(id)).ToList(), r.Different);
         if (r.Different.Count > 0)
         {
             Model.ShowToast($"{r.Different.Count} copy(ies) aren't identical after all (changed since?): {System.IO.Path.GetFileName(r.Different[0])} · rescan with r");
@@ -630,7 +639,11 @@ public sealed class BrowserController(BrowserModel model, IShell shell, Deleter?
             m.ShowToast("wait for the scan to finish before deleting");
             return;
         }
-        List<int> targets = explicitTargets ?? (m.Marks.Count > 0 ? [.. m.Marks] : m.SelectedNode is int sel ? [sel] : []);
+        // Without marks, only the list and the map have a highlighted entry of their own; anywhere
+        // else Browse's selection isn't on screen, so it must never be what gets deleted.
+        bool listOnScreen = m.View is ViewKind.Browse or ViewKind.Map;
+        List<int> targets = explicitTargets
+            ?? (m.Marks.Count > 0 ? [.. m.Marks] : listOnScreen && m.SelectedNode is int sel ? [sel] : []);
         if (targets.Count == 0)
         {
             m.ShowToast("nothing selected to delete");
@@ -644,6 +657,7 @@ public sealed class BrowserController(BrowserModel model, IShell shell, Deleter?
     {
         d.Stage = DialogStage.Running;
         d.Permanent = permanent;
+        _runningDialog = d;
         Deleter del = deleter!;
         _running = Task.Run(() => del.Execute(d.Plan, permanent, new SyncProgress(d.SetDone)));
     }
@@ -658,12 +672,17 @@ public sealed class BrowserController(BrowserModel model, IShell shell, Deleter?
     /// <returns>True if something changed.</returns>
     public bool Poll()
     {
-        if (_running is not { IsCompleted: true } task || Model.Dialog is not { } d)
+        // The dialog this delete was started from, not whatever dialog happens to be open now.
+        if (_running is not { IsCompleted: true } task || _runningDialog is not { } d)
         {
             return false;
         }
         _running = null;
-        Model.Dialog = null;
+        _runningDialog = null;
+        if (Model.Dialog == d)
+        {
+            Model.Dialog = null;
+        }
         if (task.IsFaulted)
         {
             Model.ShowToast("delete failed: " + task.Exception?.GetBaseException().Message);
@@ -719,6 +738,33 @@ public sealed class BrowserController(BrowserModel model, IShell shell, Deleter?
             case Cmd.Clean:
                 m.View = ViewKind.Junk;
                 return true;
+            case Cmd.Mark or Cmd.Delete or Cmd.Reveal or Cmd.CopyPath:
+            {
+                // These act on the highlighted entry here, never on Browse's hidden selection.
+                List<int> top = m.TopEntries();
+                if (top.Count == 0)
+                {
+                    m.ShowToast("nothing here yet");
+                    return true;
+                }
+                int id = top[Math.Clamp(m.OverviewSelected, 0, top.Count - 1)];
+                switch (cmd)
+                {
+                    case Cmd.Mark:
+                        m.ToggleMark(id);
+                        break;
+                    case Cmd.Delete:
+                        OpenDeleteDialog(m.Marks.Count > 0 ? null : [id]);
+                        break;
+                    case Cmd.Reveal:
+                        m.ShowToast(shell.Reveal(m.FullPath(id)));
+                        break;
+                    default:
+                        m.ShowToast(shell.Copy(m.FullPath(id)));
+                        break;
+                }
+                return true;
+            }
         }
         return false;
     }
@@ -1752,7 +1798,7 @@ public sealed class BrowserController(BrowserModel model, IShell shell, Deleter?
         m.ClearToast();
         switch (cmd)
         {
-            case Cmd.SkipScan:
+            case Cmd.SkipScan when m.View != ViewKind.Snaps: // b: only means something on the scan screen and in Snaps (set base)
                 return false;
             case Cmd.NextView:
                 m.View = m.View switch
@@ -1935,6 +1981,9 @@ public sealed class BrowserController(BrowserModel model, IShell shell, Deleter?
                 }
                 break;
             case Cmd.Quit: m.QuitConfirmOpen = true; break;
+            case Cmd.Mark when m.View is not (ViewKind.Browse or ViewKind.Map):
+                m.ShowToast("nothing to mark here");
+                break;
             case Cmd.Mark:
                 if (m.SelectedNode is int id)
                 {

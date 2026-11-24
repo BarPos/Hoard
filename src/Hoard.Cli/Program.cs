@@ -58,14 +58,19 @@ root.SetAction(parse =>
     using var cts = new CancellationTokenSource();
     Console.CancelKeyPress += (_, e) => { e.Cancel = true; cts.Cancel(); };
 
+    string[] cliExcludes = parse.GetValue(exclude) ?? [];
     var scanOptions = new ScanOptions
     {
         Threads = parse.GetResult(threads) is null ? settings.Threads : parse.GetValue(threads),
-        Excludes = [.. settings.Exclude, .. parse.GetValue(exclude) ?? []],
         CrossFileSystems = parse.GetValue(crossFs) || settings.CrossFileSystems,
     };
-    // Each scanned folder gets its own firmlink aliases (scanning / must not count the Data volume twice).
-    Scanner ScannerFor(string path) => new(FileProbes.ForCurrentPlatform(), scanOptions with { AliasPaths = MacFirmlinks.AliasesFor(ResolveRoot(path)) });
+    // Each scanned folder gets its own firmlink aliases (scanning / must not count the Data volume
+    // twice), and the exclude patterns as they are now: the TUI adds to settings.Exclude (X, settings).
+    Scanner ScannerFor(string path) => new(FileProbes.ForCurrentPlatform(), scanOptions with
+    {
+        Excludes = [.. settings.Exclude, .. cliExcludes],
+        AliasPaths = MacFirmlinks.AliasesFor(ResolveRoot(path)),
+    });
     var scanner = ScannerFor(parse.GetValue(pathArg)!);
 
     // Export and threshold options are checked before scanning, so a typo doesn't cost a scan.
@@ -161,6 +166,11 @@ root.SetAction(parse =>
 
     if (exportFormat is { } format)
     {
+        if (result.Cancelled)
+        {
+            Console.Error.WriteLine("hoard: scan interrupted; nothing exported");
+            return ExitInterrupted;
+        }
         int code = Hoard.Cli.ExportCommand.Write(result, format, settings, parse.GetValue(output), parse.GetValue(depth), minBytes,
             !parse.GetValue(foldersOnly), useApparent, parse.GetValue(dupes), term, cts.Token);
         if (code != ExitOk)

@@ -118,7 +118,7 @@
 <path d="M915.8,73 H924.6" stroke="#af8700" stroke-width="1.3" fill="none"/>
 <path d="M924.2,73 H933" stroke="#af8700" stroke-width="1.3" fill="none"/>
 <path d="M932.6,73 H941.4" stroke="#af8700" stroke-width="1.3" fill="none"/>
-<text x="949.6" y="77" fill="#808080" textLength="50.4" lengthAdjust="spacingAndGlyphs">v1.0.1</text>
+<text x="949.6" y="77" fill="#808080" textLength="50.4" lengthAdjust="spacingAndGlyphs">v1.0.2</text>
 <path d="M1008.2,73 H1017" stroke="#af8700" stroke-width="1.3" fill="none"/>
 <path d="M1016.6,73 H1016.8 A4.2,4.2 0 0 1 1021,77.2 V82" stroke="#af8700" stroke-width="1.3" fill="none"/>
 <path d="M38.2,81.8 V100.2 " stroke="#af8700" stroke-width="1.3" fill="none"/>
@@ -410,7 +410,7 @@
 <rect x="504.4" y="460" width="8.8" height="18.4" fill="#ff5f00" class="b"/>
 <rect x="512.8" y="460" width="8.8" height="18.4" fill="#ff5f00" class="b"/>
 <rect x="521.2" y="460" width="8.8" height="18.4" fill="#ff0000" class="b"/>
-<text x="664" y="473" fill="#d0d0d0" textLength="159.6" lengthAdjust="spacingAndGlyphs">4 596 files · 5.2 s</text>
+<text x="664" y="473" fill="#d0d0d0" textLength="159.6" lengthAdjust="spacingAndGlyphs">4 481 files · 5.2 s</text>
 <path d="M1021,459.8 V478.2 " stroke="#af8700" stroke-width="1.3" fill="none"/>
 <path d="M38.2,477.8 V496.2 " stroke="#af8700" stroke-width="1.3" fill="none"/>
 <path d="M1021,477.8 V496.2 " stroke="#af8700" stroke-width="1.3" fill="none"/>

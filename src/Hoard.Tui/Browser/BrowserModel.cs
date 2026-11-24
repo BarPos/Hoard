@@ -475,6 +475,9 @@ public sealed class BrowserModel
         bool quiet = NoteWatchChange(r.Folder, delta);
         // Everything worked out from the old totals is out of date now.
         RefreshTypes();
+        // A fresh junk search on the new totals; the old one is stopped, not left running.
+        _junkCancel.Cancel();
+        _junkCancel = new CancellationTokenSource();
         _junk = null;
         _junkTask = null;
         StartJunk();
@@ -534,7 +537,8 @@ public sealed class BrowserModel
             Settings.Exclude.Add(pattern);
             SaveSettings();
         }
-        Unmark([]);
+        Unmark([id]); // no longer counted, so no longer something to delete
+        JunkSkipped.Add(id);
         RefreshTypes();
         RefreshLive();
         return $"excluded {pattern} · {Hoard.Core.Formatting.Units.Size(size)} no longer counted · remove it in settings (,)";
@@ -986,7 +990,7 @@ public sealed class BrowserModel
     }
 
     /// <summary>Copies of a group that still exist.</summary>
-    public List<int> DupFiles(DupGroup g) => [.. g.Files.Where(id => !Store.IsDeleted(id))];
+    public List<int> DupFiles(DupGroup g) => [.. g.Files.Where(id => !Store.IsDeleted(id) && Store.Kind(id) != NodeKind.Excluded)];
 
     /// <summary>The copy the keep rule would keep.</summary>
     public int DupKeeper(DupGroup g)
@@ -1049,13 +1053,22 @@ public sealed class BrowserModel
         var pairs = new List<(int Copy, string CopyPath, string KeepPath)>();
         foreach (DupGroup g in d.Report.Groups)
         {
+            // Compare with a copy that stays: the kept one if it isn't going, else any copy that isn't.
+            List<int> files = DupFiles(g);
             int keep = DupKeeper(g);
-            foreach (int id in DupFiles(g).Where(targets.Contains))
+            int? survivor = !targets.Contains(keep) ? keep : files.Where(f => !targets.Contains(f)).Select(f => (int?)f).FirstOrDefault();
+            foreach (int id in files.Where(targets.Contains))
             {
-                pairs.Add((id, FullPath(id), FullPath(keep == id ? DupFiles(g).First(f => f != id) : keep)));
+                if (survivor is int other)
+                {
+                    pairs.Add((id, FullPath(id), FullPath(other)));
+                }
             }
         }
-        var others = targets.Except(pairs.Select(p => p.Copy)).ToList(); // marked things that aren't duplicates
+        // Marked things that aren't copies in any group go through as they are; a copy with no
+        // surviving partner to compare against never does.
+        var inGroups = new HashSet<int>(d.Report.Groups.SelectMany(DupFiles));
+        var others = targets.Where(id => !inGroups.Contains(id)).ToList();
         _dupVerify = Task.Run(() =>
         {
             var ok = new List<int>(others);
@@ -1560,7 +1573,9 @@ public sealed class BrowserModel
     public int JunkScroll { get; set; }
 
     private Task<JunkReport>? _junkTask;
-    private readonly CancellationTokenSource _junkCancel = new();
+    private CancellationTokenSource _junkCancel = new();
+    /// <summary>Rules already seen in a report: SAFE ones are ticked only the first time, so un-ticks survive rescans.</summary>
+    private readonly HashSet<string> _junkRulesSeen = [];
 
     /// <summary>Progress of the background junk search (folders checked so far).</summary>
     public JunkProgress JunkWork { get; } = new();
@@ -1604,9 +1619,13 @@ public sealed class BrowserModel
             return false;
         }
         _junk = task.Result;
-        foreach (JunkCategory c in _junk.Categories.Where(c => c.Rule.Safety == Safety.Safe))
+        foreach (JunkCategory c in _junk.Categories)
         {
-            JunkChecked.Add(c.Rule.Id);
+            // SAFE rules start ticked the first time they show up; after that the user's choice stands.
+            if (_junkRulesSeen.Add(c.Rule.Id) && c.Rule.Safety == Safety.Safe)
+            {
+                JunkChecked.Add(c.Rule.Id);
+            }
         }
         return true;
     }

@@ -62,7 +62,8 @@ public static class EmptyFinder
                 {
                     stack.Push(id);
                 }
-                else if (kind == NodeKind.File && s.Apparent(id) == 0)
+                // Extra names of a hard-linked file carry no size (it's counted at its first name) but aren't empty.
+                else if (kind == NodeKind.File && s.Apparent(id) == 0 && (s.Flags(id) & NodeFlags.HardLinkDuplicate) == 0)
                 {
                     string pattern = PatternOf(s.Name(id));
                     if (!zero.TryGetValue(pattern, out var list))

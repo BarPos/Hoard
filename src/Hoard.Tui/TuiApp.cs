@@ -159,7 +159,9 @@ internal sealed class HoardView : Runnable
         var model = new BrowserModel(session, theme)
         {
             SharedBlocks = Hoard.Platform.SharedBlocks.ForCurrentPlatform(),
-            Rescanner = (path, token) => _scanner.Scan(path, token),
+            // A scanner built now, so patterns added since start-up apply; the subfolder is matched
+            // as part of the whole scan (root-anchored patterns, parent .hoardignore files).
+            Rescanner = (path, token) => (_scannerFor?.Invoke(session.RootPath) ?? _scanner).ScanSubtree(session.RootPath, path, token),
         };
         return new BrowserController(model, new SystemShell(), deleter);
     }
@@ -169,6 +171,10 @@ internal sealed class HoardView : Runnable
     {
         BrowserModel old = _browser.Model;
         Shutdown();
+        if (_scannerFor is not null)
+        {
+            _scanner = _scannerFor(_rootPath); // the current exclude patterns
+        }
         _cancel = new CancellationTokenSource();
         _session = _scanner.Start(_rootPath, _cancel.Token);
         _browser = NewController(_session, old.Theme);

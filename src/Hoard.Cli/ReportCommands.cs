@@ -20,6 +20,14 @@ internal static class ReportCommands
 {
     private const int ExitThreshold = 3, ExitInterrupted = 130;
 
+    /// <summary>Ctrl-C, for the whole command: the scan and everything after it.</summary>
+    private static readonly Lazy<CancellationTokenSource> Interrupt = new(() =>
+    {
+        var cts = new CancellationTokenSource();
+        Console.CancelKeyPress += (_, e) => { e.Cancel = true; cts.Cancel(); };
+        return cts;
+    });
+
     public static IEnumerable<Command> Create()
     {
         yield return Types();
@@ -39,8 +47,7 @@ internal static class ReportCommands
     private static (ScanResult? Result, int Code, Settings Settings) Scan(string path, Tty term)
     {
         var (settings, _) = SettingsFile.Load(SettingsFile.DefaultPath());
-        using var cts = new CancellationTokenSource();
-        Console.CancelKeyPress += (_, e) => { e.Cancel = true; cts.Cancel(); };
+        CancellationToken cancel = Interrupt.Value.Token;
         string full = Path.GetFullPath(path);
         var scanner = new Scanner(FileProbes.ForCurrentPlatform(), new ScanOptions
         {
@@ -54,7 +61,7 @@ internal static class ReportCommands
             ScanResult r;
             using (Spinner.Start(scanner.Progress, term, false))
             {
-                r = scanner.Scan(path, cts.Token);
+                r = scanner.Scan(path, cancel);
             }
             if (r.Cancelled)
             {
@@ -248,7 +255,16 @@ internal static class ReportCommands
             {
                 return code;
             }
-            DupReport d = DuplicateFinder.Find(r.Store, id => FullPath(r, id), min, cache: new HashCache(HashCache.DefaultFile()));
+            DupReport d;
+            try
+            {
+                d = DuplicateFinder.Find(r.Store, id => FullPath(r, id), min, cache: new HashCache(HashCache.DefaultFile()), cancel: Interrupt.Value.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                Console.Error.WriteLine("hoard: interrupted");
+                return ExitInterrupted;
+            }
             ISharedBlocks blocks = SharedBlocks.ForCurrentPlatform();
             long Frees(int id) => Math.Min(blocks.PrivateBytes(FullPath(r, id)) ?? r.Store.Size(id), r.Store.Size(id));
             var groups = d.Groups.Select(g => (g, frees: g.Files.Skip(1).Sum(Frees))).OrderByDescending(x => x.frees).ToList();

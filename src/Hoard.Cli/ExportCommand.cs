@@ -14,6 +14,20 @@ internal static class ExportCommand
     public static int Write(ScanResult r, ExportFormat format, Settings settings, string? output, int depth, long minSize,
         bool includeFiles, bool apparent, bool dupes, Tty term, CancellationToken cancel)
     {
+        try
+        {
+            return WriteCore(r, format, settings, output, depth, minSize, includeFiles, apparent, dupes, term, cancel);
+        }
+        catch (OperationCanceledException)
+        {
+            Console.Error.WriteLine("hoard: interrupted");
+            return 130;
+        }
+    }
+
+    private static int WriteCore(ScanResult r, ExportFormat format, Settings settings, string? output, int depth, long minSize,
+        bool includeFiles, bool apparent, bool dupes, Tty term, CancellationToken cancel)
+    {
         NodeStore s = r.Store;
         string FullPath(int id)
         {

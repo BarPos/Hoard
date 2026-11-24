@@ -86,6 +86,22 @@ public sealed class SnapsViewTests : IDisposable
     }
 
     [Fact]
+    public void B_sets_the_base_in_snaps()
+    {
+        Write("work/a.bin", 10_000);
+        BrowserModel first = Scan();
+        new BrowserController(first, new FakeShell()).Apply(BrowserController.FromChar('P'), 10);
+        first.WaitForSnapshotSave();
+        BrowserModel second = Scan();
+        Assert.Equal(2, second.SnapRows.Count);
+        var ctl = new BrowserController(second, new FakeShell());
+        second.SnapSelected = 0;
+        ctl.Apply(BrowserController.FromChar('b'), 10);
+        Assert.Equal(0, second.SnapBase);
+        Assert.Contains("same snapshot", second.Toast);
+    }
+
+    [Fact]
     public void Deleting_a_snapshot_takes_two_presses()
     {
         Write("a/x.bin", 1_000);

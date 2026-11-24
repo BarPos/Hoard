@@ -165,11 +165,49 @@ public sealed class Scanner
         Start(rootPath, cancel).Completion.GetAwaiter().GetResult();
 
     /// <summary>
+    /// Scans one folder of an earlier scan of <paramref name="scanRoot"/> (a rescan with <c>r</c>):
+    /// patterns are matched against paths from <paramref name="scanRoot"/>, as in the full scan,
+    /// and the <c>.hoardignore</c> files of the folders above <paramref name="folder"/> apply too.
+    /// </summary>
+    public ScanResult ScanSubtree(string scanRoot, string folder, CancellationToken cancel = default)
+    {
+        string root = Path.GetFullPath(scanRoot).TrimEnd('/');
+        string sub = Path.GetFullPath(folder).TrimEnd('/');
+        if (root.Length == 0)
+        {
+            root = "/";
+        }
+        string rel = sub == root ? "" : Path.GetRelativePath(root, sub).Replace(Path.DirectorySeparatorChar, '/');
+        if (rel.StartsWith("..", StringComparison.Ordinal))
+        {
+            return Scan(folder, cancel); // not inside the scan: a plain scan
+        }
+        // The ignore files of the scan root and every folder down to (not including) the subfolder.
+        LocalIgnore? chain = null;
+        string dir = root, dirRel = "";
+        string[] parts = rel.Length == 0 ? [] : rel.Split('/');
+        for (int i = 0; i < parts.Length; i++)
+        {
+            if (File.Exists(Path.Combine(dir, IgnoreFile)))
+            {
+                chain = ReadIgnore(dir, dirRel, chain);
+            }
+            dir = dir == "/" ? "/" + parts[i] : dir + "/" + parts[i];
+            dirRel = dirRel.Length == 0 ? parts[i] : dirRel + "/" + parts[i];
+        }
+        return StartCore(sub, rel, chain, cancel).Completion.GetAwaiter().GetResult();
+    }
+
+    /// <summary>
     /// Validates the root, creates the root node, and starts scanning in the background.
     /// Returns immediately; watch <see cref="ScanSession.Store"/> and <see cref="Progress"/>.
     /// </summary>
     /// <exception cref="DirectoryNotFoundException">The root is missing or not a directory.</exception>
-    public ScanSession Start(string rootPath, CancellationToken cancel = default)
+    public ScanSession Start(string rootPath, CancellationToken cancel = default) => StartCore(rootPath, "", null, cancel);
+
+    /// <param name="relPrefix">The scanned folder's path relative to the original scan root ("" for a full scan).</param>
+    /// <param name="ignore">.hoardignore rules inherited from folders above it.</param>
+    private ScanSession StartCore(string rootPath, string relPrefix, LocalIgnore? ignore, CancellationToken cancel)
     {
         string root = Path.GetFullPath(rootPath);
         if (root.Length > 1)
@@ -209,7 +247,7 @@ public sealed class Scanner
         int threads = _options.Threads > 0 ? _options.Threads : Math.Clamp(Environment.ProcessorCount, 1, 12);
         run.Workers = threads;
         run.Pending = 1;
-        run.Stack.Push(new Work(rootId, root, ""));
+        run.Stack.Push(new Work(rootId, root, relPrefix, ignore));
         run.Signal.Release();
 
         var session = new ScanSession(store, root, _probe, Progress);

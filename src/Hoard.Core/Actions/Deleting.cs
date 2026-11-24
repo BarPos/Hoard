@@ -84,6 +84,40 @@ public sealed class Deleter(NodeStore store, string rootPath, IFileProbe probe, 
         return null;
     }
 
+    /// <summary>
+    /// Why a folder can't be deleted whole: it holds something the scan didn't count (an excluded
+    /// entry, another disk, an alias), so the size the user confirms would be wrong and a recursive
+    /// delete would take that too. Null when everything inside was counted.
+    /// </summary>
+    private string? HiddenInside(int dir)
+    {
+        if (store.Kind(dir) != NodeKind.Directory)
+        {
+            return null;
+        }
+        var stack = new Stack<int>(store.Children(dir));
+        while (stack.Count > 0)
+        {
+            int id = stack.Pop();
+            string? what = store.Kind(id) switch
+            {
+                NodeKind.Excluded => "an excluded entry",
+                NodeKind.MountPoint => "another disk",
+                NodeKind.Alias => "another path to a folder counted elsewhere",
+                _ => null,
+            };
+            if (what is not null)
+            {
+                return $"holds {what} ({store.RelativePath(id)}) that isn't counted here; delete what's around it instead";
+            }
+            foreach (int c in store.Children(id))
+            {
+                stack.Push(c);
+            }
+        }
+        return null;
+    }
+
     public DeletePlan Plan(IEnumerable<int> marked)
     {
         var refused = new List<(string, string)>();
@@ -98,7 +132,7 @@ public sealed class Deleter(NodeStore store, string rootPath, IFileProbe probe, 
                     NodeKind.Alias => "another path to a folder counted elsewhere",
                     NodeKind.MountPoint => "on another disk",
                     NodeKind.Excluded => "excluded from the scan",
-                    _ => null,
+                    _ => HiddenInside(id),
                 };
             if (why is null)
             {

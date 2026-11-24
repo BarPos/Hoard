@@ -144,7 +144,8 @@ public static class FileTypes
         Walk(s, cancel, (id, cat, ext) =>
         {
             long size = s.Size(id);
-            if (s.Apparent(id) == 0)
+            // Extra names of a hard-linked file carry no size but aren't empty.
+            if (s.Apparent(id) == 0 && (s.Flags(id) & NodeFlags.HardLinkDuplicate) == 0)
             {
                 zero++;
             }
