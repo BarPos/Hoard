@@ -145,6 +145,17 @@ public class BrowserTests(Fixture f) : IClassFixture<Fixture>
         Assert.Equal("press q to quit", m.Toast);
         Assert.False(ctl.QuitRequested);
         ctl.Apply(Cmd.Quit, 10);
+        Assert.False(ctl.QuitRequested);              // asks first
+        Assert.True(m.QuitConfirmOpen);
+        Assert.Contains("Quit Hoard?", Render(m).ToString());
+        ctl.Apply(Cmd.Escape, 10);                    // esc stays
+        Assert.False(m.QuitConfirmOpen);
+        Assert.False(ctl.QuitRequested);
+        ctl.Apply(Cmd.Quit, 10);
+        Assert.True(ctl.AnswerQuit('n'));             // n stays
+        Assert.False(ctl.QuitRequested);
+        ctl.Apply(Cmd.Quit, 10);
+        ctl.Apply(Cmd.Quit, 10);                      // q q quits
         Assert.True(ctl.QuitRequested);
     }
 

@@ -1,0 +1,534 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>@@TITLE@@</title>
+<!--
+  Mock of the "pretty HTML" export (plan.md §9.2). Self-contained: no external
+  requests. Mock data matches the shell examples. Read-only: nothing can be deleted.
+-->
+<style>
+:root, [data-theme="hoard"] {
+  --bg:#121212; --panel:#161412; --acc:#ffaf00; --acc2:#ff8700; --acc3:#ff0000;
+  --text:#d0d0d0; --muted:#808080; --faint:#4e4e4e; --border:#af8700;
+  --bar:#5f0000; --sel:#875f00; --track:#303030;
+  --ok:#87d787; --warn:#ffd75f; --bad:#ff5f5f; --info:#5fd7ff;
+  --grad:linear-gradient(90deg,#ffff00,#ffd700,#ffaf00,#ff8700,#ff5f00,#ff0000);
+  --heat0:#303030; --heat1:#5f5f00; --heat2:#875f00; --heat3:#af8700; --heat4:#d78700; --heat5:#ff8700; --heat6:#ff0000;
+}
+[data-theme="neon"] {
+  --bg:#0d0b14; --panel:#120f1c; --acc:#ff00ff; --acc2:#00ffff; --acc3:#af00ff;
+  --text:#eeeeee; --muted:#8787af; --faint:#5f5f87; --border:#8700ff;
+  --bar:#00005f; --sel:#5f0087; --track:#262626;
+  --ok:#00ff87; --warn:#ffff5f; --bad:#ff005f; --info:#5fffff;
+  --grad:linear-gradient(90deg,#00ffff,#00d7ff,#5fd7ff,#87ffff,#af87ff,#d787ff,#ff87ff,#ff00ff);
+  --heat0:#262626; --heat1:#00005f; --heat2:#5f0087; --heat3:#8700af; --heat4:#af00d7; --heat5:#d700ff; --heat6:#ff00ff;
+}
+[data-theme="frost"] {
+  --bg:#0e1316; --panel:#11181c; --acc:#87d7ff; --acc2:#afffff; --acc3:#5fafff;
+  --text:#e4e4e4; --muted:#87afaf; --faint:#5f8787; --border:#5f87af;
+  --bar:#005f5f; --sel:#005f87; --track:#303030;
+  --ok:#87d7af; --warn:#ffffaf; --bad:#ff8787; --info:#afd7ff;
+  --grad:linear-gradient(90deg,#d7ffff,#afffff,#87ffff,#87d7ff,#5fd7ff,#5fafff,#0087ff,#005fff);
+  --heat0:#303030; --heat1:#005f5f; --heat2:#005f87; --heat3:#0087af; --heat4:#00afd7; --heat5:#5fafff; --heat6:#afd7ff;
+}
+[data-theme="mono"] {
+  --bg:#111; --panel:#151515; --acc:#eee; --acc2:#bcbcbc; --acc3:#8a8a8a;
+  --text:#d0d0d0; --muted:#808080; --faint:#585858; --border:#6c6c6c;
+  --bar:#303030; --sel:#4e4e4e; --track:#262626;
+  --ok:#eee; --warn:#bcbcbc; --bad:#fff; --info:#bcbcbc;
+  --grad:linear-gradient(90deg,#fff,#dadada,#bcbcbc,#9e9e9e,#808080,#626262);
+  --heat0:#262626; --heat1:#444; --heat2:#626262; --heat3:#808080; --heat4:#9e9e9e; --heat5:#bcbcbc; --heat6:#eee;
+}
+* { box-sizing:border-box; }
+html, body { margin:0; background:var(--bg); color:var(--text); }
+body { font:14px/1.45 ui-monospace,"SF Mono",Menlo,"Cascadia Mono",Consolas,"DejaVu Sans Mono",monospace; }
+button { font:inherit; color:inherit; background:none; border:0; cursor:pointer; padding:0; }
+.app { max-width:1280px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; }
+
+/* header bar */
+.hdr { display:flex; align-items:center; gap:4px; background:var(--bar); padding:0 8px; position:sticky; top:0; z-index:5; }
+.logo { font-weight:700; padding:6px 8px 6px 2px; white-space:nowrap; }
+.logo b { background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent; letter-spacing:1px; }
+.logo i { color:var(--acc); font-style:normal; margin-right:6px; }
+.tabs { display:flex; overflow-x:auto; scrollbar-width:none; flex:1; }
+.tabs::-webkit-scrollbar { display:none; }
+.tab { color:var(--muted); padding:6px 10px; white-space:nowrap; min-height:32px; }
+.tab:hover { color:var(--text); }
+.tab[aria-selected="true"] { background:var(--acc); color:#000; font-weight:700; }
+.tab kbd { opacity:.55; margin-right:4px; font-size:11px; }
+.hdr select { background:var(--bar); color:var(--text); border:1px solid var(--faint); font:inherit; padding:3px 4px; border-radius:4px; }
+
+/* breadcrumbs */
+.crumbs { display:flex; flex-wrap:wrap; align-items:center; gap:6px; padding:8px 12px; }
+.crumbs button { color:var(--text); }
+.crumbs button:hover { color:var(--acc); text-decoration:underline; }
+.crumbs .sep { color:var(--faint); }
+.crumbs .cur { color:var(--acc); font-weight:700; }
+.crumbs .right { margin-left:auto; color:var(--muted); }
+.crumbs .right b { color:var(--text); font-weight:400; }
+.crumbs .right span { white-space:nowrap; }
+
+/* boxes with titles in the border */
+main { flex:1; padding:6px 10px 10px; }
+.grid { display:grid; gap:14px; }
+.g2 { grid-template-columns: minmax(0,1.6fr) minmax(0,1fr); }
+.box { position:relative; border:1px solid var(--border); border-radius:10px; padding:16px 14px 12px; background:var(--panel); min-width:0; }
+.box > h2 { position:absolute; top:-0.8em; left:12px; margin:0; padding:0 6px; font-size:14px; background:var(--bg); color:var(--acc); }
+.box > .note { position:absolute; bottom:-0.75em; right:12px; padding:0 6px; background:var(--bg); color:var(--faint); font-size:12px; }
+.box > .rt { position:absolute; top:-0.75em; right:12px; padding:0 6px; background:var(--bg); color:var(--muted); font-size:12px; }
+.muted { color:var(--muted); } .faint { color:var(--faint); } .ok { color:var(--ok); } .warn { color:var(--warn); } .bad { color:var(--bad); } .info { color:var(--info); } .acc { color:var(--acc); }
+.lead { color:var(--muted); margin:0 0 10px; }
+
+/* bars */
+.bar { height:12px; background:var(--track); border-radius:2px; overflow:hidden; min-width:40px; }
+.bar > span { display:block; height:100%; background:var(--grad); background-size:var(--bw,100%) 100%; }
+.bar.solid > span { background:var(--c,var(--acc2)); }
+
+/* lists */
+.list { width:100%; border-collapse:collapse; }
+.list th { text-align:left; color:var(--muted); font-weight:400; border-bottom:1px solid var(--faint); padding:2px 6px; white-space:nowrap; }
+.list th.num, .list td.num { text-align:right; }
+.list td { padding:3px 6px; white-space:nowrap; }
+.list td.name { overflow:hidden; text-overflow:ellipsis; max-width:0; width:38%; }
+.list td.barc { width:34%; }
+.list tr.row { cursor:pointer; }
+.list tr.row:hover td { background:rgba(255,255,255,.04); }
+.list tr.row[aria-selected="true"] td { background:var(--sel); }
+.ico { color:var(--acc); margin-right:6px; }
+.dot { font-size:12px; }
+.sortable { cursor:pointer; } .sortable:hover { color:var(--text); }
+
+/* details */
+.kv { display:grid; grid-template-columns:auto 1fr; gap:2px 12px; margin:0; }
+.kv dt { color:var(--muted); } .kv dd { margin:0; text-align:right; }
+.sub { color:var(--acc); margin:12px 0 4px; }
+.mini { display:grid; grid-template-columns:7.5em 1fr 3em; gap:4px 8px; align-items:center; }
+.actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+.btn { border:1px solid var(--faint); border-radius:6px; padding:6px 10px; min-height:32px; color:var(--text); }
+.btn:hover { border-color:var(--acc); color:var(--acc); }
+.btn.primary { background:var(--acc); color:#000; border-color:var(--acc); font-weight:700; }
+
+/* overview */
+.hero { font-size:56px; font-weight:800; line-height:1; background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent; margin:6px 0 4px; }
+.split { display:grid; grid-template-columns:8.5em 1fr 5.5em; gap:6px 10px; align-items:center; }
+.badge { display:inline-block; padding:0 6px; border-radius:3px; color:#000; font-weight:700; font-size:12px; }
+.b-ok { background:var(--ok); } .b-warn { background:var(--warn); } .b-bad { background:var(--bad); } .b-info { background:var(--info); }
+
+/* treemap */
+.tm { position:relative; height:min(62vh,560px); min-height:300px; }
+.tm .r { position:absolute; overflow:hidden; border-radius:3px; padding:3px 6px; color:#000; font-size:12px; line-height:1.25; cursor:pointer; outline:1px solid var(--bg); }
+.tm .r:hover { filter:brightness(1.15); }
+.tm .r b { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.tm .r span { opacity:.75; white-space:nowrap; }
+.tm .r.parent { padding-top:2px; }
+.tm .r.parent > b { color:#fff; }
+.tip { position:fixed; pointer-events:none; background:#000; color:var(--text); border:1px solid var(--border); border-radius:6px; padding:6px 8px; font-size:12px; z-index:20; display:none; }
+
+/* stacked + heat */
+.stack { display:flex; height:18px; border-radius:3px; overflow:hidden; margin:4px 0 8px; }
+.legend { display:flex; flex-wrap:wrap; gap:4px 14px; color:var(--muted); font-size:12px; }
+.sw { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:5px; vertical-align:-1px; }
+.heat { display:grid; grid-template-columns: 8em 6em repeat(8, minmax(44px,1fr)) 9em; gap:3px; align-items:center; overflow-x:auto; }
+.heat .c { text-align:center; padding:4px 0; border-radius:3px; font-size:12px; }
+.heat .h { color:var(--muted); font-size:12px; text-align:center; }
+
+/* footer */
+.foot { position:sticky; bottom:0; background:var(--bar); display:flex; flex-wrap:wrap; gap:2px 14px; padding:5px 12px; color:var(--muted); font-size:13px; }
+.foot kbd { color:var(--acc); font-weight:700; font-family:inherit; margin-right:4px; }
+.foot .r { margin-left:auto; color:var(--text); }
+
+/* overlays */
+.overlay { position:fixed; inset:0; background:rgba(0,0,0,.6); display:none; align-items:flex-start; justify-content:center; padding:8vh 12px; z-index:30; }
+.overlay.open { display:flex; }
+.dlg { width:min(720px,100%); max-height:80vh; overflow:auto; }
+.dlg input { width:100%; background:var(--bg); color:var(--text); border:1px solid var(--acc); border-radius:6px; padding:8px 10px; font:inherit; outline:none; }
+.res { list-style:none; margin:8px 0 0; padding:0; }
+.res li { padding:5px 8px; border-radius:4px; cursor:pointer; display:flex; gap:10px; }
+.res li[aria-selected="true"] { background:var(--sel); }
+.res li .p { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.res mark { background:none; color:var(--acc); font-weight:700; text-decoration:underline; }
+.keys { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:4px 20px; }
+.keys h3 { color:var(--acc2); font-size:13px; margin:8px 0 2px; }
+.keys div { display:flex; gap:10px; } .keys kbd { color:var(--acc); min-width:5em; font-family:inherit; font-weight:700; }
+.toast { position:fixed; bottom:48px; left:50%; transform:translateX(-50%); background:var(--sel); color:var(--text); padding:6px 14px; border-radius:6px; opacity:0; transition:opacity .2s; z-index:40; }
+.toast.show { opacity:1; }
+.tour { border-color:var(--acc); margin-bottom:14px; display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+
+/* responsive */
+@media (max-width: 960px) {
+  .g2 { grid-template-columns: 1fr; }
+  .hero { font-size:44px; }
+}
+@media (max-width: 640px) {
+  body { font-size:13px; }
+  main { padding:6px 6px 10px; }
+  .hide-sm { display:none; }
+  .list td.barc { width:28%; }
+  .crumbs .right { margin-left:0; width:100%; }
+  .split { grid-template-columns:9em 1fr 4.8em; }
+  .foot .opt { display:none; }
+  .hdr select { max-width:6.5em; }
+  .tm { height:60vh; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .bar > span { transition: width .45s ease-out; }
+}
+</style>
+</head>
+<body>
+<div class="app" data-theme="hoard" id="app">
+  <header class="hdr">
+    <div class="logo"><i>◆</i><b>HOARD</b></div>
+    <nav class="tabs" role="tablist" id="tabs"></nav>
+    <label class="sr" title="Theme (t)"><select id="theme" aria-label="Theme">
+      <option>hoard</option><option>neon</option><option>frost</option><option>mono</option></select></label>
+  </header>
+  <div class="crumbs" id="crumbs"></div>
+  <main id="main"></main>
+  <footer class="foot" id="foot"></footer>
+</div>
+
+<div class="overlay" id="find"><div class="box dlg"><h2>Find in ~</h2><span class="rt" id="findCount"></span>
+  <input id="findIn" placeholder="type to search, e.g. nmod mono" autocomplete="off" spellcheck="false">
+  <ul class="res" id="findRes"></ul>
+  <p class="faint" style="margin:10px 0 0">↑↓ pick · ↵ jump · esc close</p></div></div>
+
+<div class="overlay" id="help"><div class="box dlg"><h2>Keys</h2><span class="rt">same keys as the terminal app</span>
+  <div class="keys">
+    <section><h3>NAVIGATE</h3>
+      <div><kbd>↑↓ j k</kbd>move</div><div><kbd>→ ↵ l</kbd>open / zoom in</div><div><kbd>← ⌫ h</kbd>up / zoom out</div>
+      <div><kbd>1 … 8</kbd>switch tab</div><div><kbd>/</kbd>find</div><div><kbd>:</kbd>command palette</div></section>
+    <section><h3>VIEW</h3>
+      <div><kbd>s S</kbd>sort field / order</div><div><kbd>t</kbd>next theme</div><div><kbd>y</kbd>copy path</div>
+      <div><kbd>?</kbd>this help</div><div><kbd>esc</kbd>close / back</div></section>
+    <section><h3>MOUSE &amp; TOUCH</h3>
+      <div><kbd>click</kbd>select · tabs</div><div><kbd>dbl-click</kbd>open / zoom</div><div><kbd>hover</kbd>treemap tooltip</div>
+      <div><kbd>tap</kbd>works the same</div></section>
+  </div>
+  <p class="faint">This report is read-only. To delete things, open the same folder in the hoard app: <span class="info">hoard ~</span></p></div></div>
+
+<div class="tip" id="tip"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+/*@@DATA@@*/
+/* ---------------- helpers ---------------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+function fmt(b) { if (b >= 1e12) return (b/1e12).toFixed(2)+" TB"; if (b >= 1e9) return (b/1e9).toFixed(1)+" GB";
+  if (b >= 1e6) return Math.round(b/1e6)+" MB"; if (b >= 1e3) return (b/1e3).toFixed(1)+" KB"; return b+" B"; }
+const num = n => n.toLocaleString("en-US").replace(/,/g, " ");
+const pct = (a, b) => (b ? a / b * 100 : 0);
+function bar(p, color) { const w = Math.max(0, Math.min(100, p));
+  return color ? `<div class="bar solid"><span style="width:${w}%;--c:${color}"></span></div>`
+               : `<div class="bar"><span style="width:${w}%;--bw:${w ? 10000 / w : 100}%"></span></div>`; }
+const AGEC = { ok:"var(--ok)", warn:"var(--warn)", bad:"var(--bad)" };
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove("show"), 1600); }
+function copy(text) { (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(() => toast("Copied " + text), () => toast(text)); }
+const tilde = p => META.home && (p === META.home || p.startsWith(META.home + "/")) ? "~" + p.slice(META.home.length) : p;
+
+/* ---------------- state & views ---------------- */
+const VIEWS = [ ["overview","Overview"],["browse","Browse"],["map","Map"],["types","Types"],["age","Age"],["junk","Junk"],["dupes","Dupes"],["old","Big+Old"] ];
+const S = { view:"overview", node:ROOT, sel:0, sort:"size", desc:true, mapNode:ROOT };
+
+function children(n) {
+  const c = (n.c || []).slice();
+  const k = S.sort === "name" ? (a,b) => a.n.localeCompare(b.n) : S.sort === "files" ? (a,b) => (a.files||0) - (b.files||0) : (a,b) => a.s - b.s;
+  c.sort(k); if (S.desc) c.reverse(); return c;
+}
+
+function renderTabs() {
+  $("#tabs").innerHTML = VIEWS.map(([id, label], i) =>
+    `<button class="tab" role="tab" aria-selected="${S.view === id}" data-v="${id}"><kbd>${i + 1}</kbd>${label}</button>`).join("");
+}
+function renderCrumbs() {
+  const node = S.view === "map" ? S.mapNode : S.view === "browse" ? S.node : ROOT;
+  const chain = []; for (let n = node; n; n = n.parent) chain.unshift(n);
+  const parts = [`<button data-crumb="0" title="${esc(META.root)}">⌂</button>`];
+  chain.forEach((n, i) => { parts.push(`<span class="sep">▸</span>`);
+    parts.push(i === chain.length - 1 ? `<span class="cur">${esc(i === 0 ? META.rootLabel : n.n)}</span>` : `<button data-crumb="${i}">${esc(i === 0 ? META.rootLabel : n.n)}</button>`); });
+  const sortLbl = { size:"size", name:"name", files:"files" }[S.sort] + (S.desc ? " ▼" : " ▲");
+  parts.push(`<span class="right"><b>${fmt(node.s)}</b> · ${pct(node.s, ROOT.s).toFixed(1)}% of scan · sort <span class="acc">${sortLbl}</span> · <span class="info">${META.sizeMode}</span></span>`);
+  const el = $("#crumbs"); el.innerHTML = parts.join(" ");
+  el.querySelectorAll("[data-crumb]").forEach(b => b.onclick = () => { const n = chain[+b.dataset.crumb] || ROOT;
+    if (S.view === "map") S.mapNode = n; else { S.node = n; S.sel = 0; if (S.view !== "browse") S.view = "browse"; } render(); });
+}
+const FOOT = {
+  overview: [["1–8","tabs"],["→","browse"],["/","find"],["t","theme"],["?","help"]],
+  browse: [["↑↓","move"],["→ ↵","open"],["← ⌫","up"],["s","sort"],["y","copy path"],["/","find"],["?","help"]],
+  map: [["click","zoom in"],["⌫","zoom out"],["hover","details"],["t","theme"],["?","help"]],
+  types: [["t","theme"],["?","help"]], age: [["hover","value"],["?","help"]],
+  junk: [["click","show where"],["?","help"]], dupes: [["?","help"]], old: [["y","copy path"],["?","help"]] };
+function renderFoot() {
+  $("#foot").innerHTML = (FOOT[S.view] || []).map(([k, d], i) => `<span class="${i > 3 ? "opt" : ""}"><kbd>${k}</kbd>${d}</span>`).join("") +
+    `<span class="r">read-only report · hoard ${esc(META.version)} · scanned ${esc(META.scanned)}</span>`;
+}
+
+/* --- overview --- */
+function vOverview() {
+  const hogs = ROOT.c.slice(0, 6), tot = ROOT.s;
+  return `
+  <div class="box tour" id="tour"><span class="acc">Welcome!</span>
+    <span class="muted">Click a tab or press <span class="acc">1–8</span>. Size bars show each folder's share of its parent. <span class="acc">?</span> lists every key.</span>
+    <button class="btn" onclick="this.parentNode.remove()">Got it</button></div>
+  <div class="grid g2">
+    <section class="box"><h2>Reclaimable</h2>
+      <div class="hero">${fmt(META.reclaim)}</div><p class="lead">could be freed in ${esc(META.rootLabel)}</p>
+      <div class="split">
+        <span><span class="ok">●</span> Junk</span>${bar(pct(META.junk, Math.max(1, META.reclaim)), "var(--ok)")}<span class="num">${fmt(META.junk)}</span>
+        <span class="faint" style="grid-column:1/-1;margin:-4px 0 4px 1.3em">${fmt(META.junkSafe)} safe · ${fmt(META.junk - META.junkSafe)} to review</span>
+        <span><span class="info">●</span> Duplicates</span>${bar(pct(META.dupes, Math.max(1, META.reclaim)), "var(--info)")}<span class="num">${META.dupesKnown ? fmt(META.dupes) : "not looked for"}</span>
+        <span><span class="warn">●</span> Big &amp; old</span>${bar(pct(META.old, Math.max(1, META.reclaim)), "var(--warn)")}<span class="num">${fmt(META.old)}</span>
+      </div>
+      <div class="actions"><button class="btn" data-go="junk"><span class="acc">J</span> junk</button>
+        <button class="btn" data-go="dupes"><span class="acc">D</span> duplicates</button>
+        <button class="btn" data-go="old"><span class="acc">O</span> big &amp; old</button></div>
+    </section>
+    <section class="box"><h2>Disk${META.disk ? " · " + esc(META.disk.name) : ""}</h2>
+      ${META.disk ? `<div class="split" style="grid-template-columns:7em 1fr 3.6em">
+        <span class="muted">used now</span>${bar(pct(META.disk.used, META.disk.total))}<span class="warn">${pct(META.disk.used, META.disk.total).toFixed(1)}%</span>
+        <span class="faint" style="grid-column:1/-1">${fmt(META.disk.used)} of ${fmt(META.disk.total)}</span>
+        <span class="muted">after cleanup</span>${bar(pct(META.disk.used - META.reclaim, META.disk.total), "var(--ok)")}<span class="ok">${pct(META.disk.used - META.reclaim, META.disk.total).toFixed(1)}%</span>
+        <span class="faint" style="grid-column:1/-1">${fmt(META.disk.used - META.reclaim)} · frees ${fmt(META.reclaim)} once the Trash is emptied</span>
+        <span class="muted">this scan</span>${bar(pct(ROOT.s, META.disk.used), "#ffaf00")}<span class="muted">${pct(ROOT.s, META.disk.used).toFixed(1)}%</span>
+      </div>` : `<p class="muted">Disk size unknown.</p>`}
+      ${META.hardLinks ? `<p class="muted" style="margin:12px 0 0"><span class="info">≡</span> ${num(META.hardLinks)} hard links counted once <span class="ok">−${fmt(META.hardSaved)}</span></p>` : ""}
+    </section>
+    <section class="box"><h2>Biggest in ${esc(META.rootLabel)}</h2>
+      <table class="list"><tbody>${hogs.map(n => `<tr class="row" data-open="${esc(n.n)}"><td class="name"><span class="sw" style="background:${n.col}"></span>${esc(n.n)}</td>
+        <td class="num">${fmt(n.s)}</td><td class="barc">${bar(pct(n.s, tot) * 2.5, n.col)}</td></tr>`).join("")}</tbody></table>
+      <span class="note">${ROOT.c.length > 6 ? "+ " + (ROOT.c.length - 6) + " more · " : ""}click to browse</span></section>
+    <section class="box"><h2>By type</h2>
+      <div class="stack">${TYPES.map(([n, s, c]) => `<span title="${n} ${fmt(s * G)}" style="width:${pct(s, META.typesGB)}%;background:${c}"></span>`).join("")}</div>
+      <div class="legend">${TYPES.slice(0, 6).map(([n, s, c]) => `<span><span class="sw" style="background:${c}"></span>${n} ${Math.round(pct(s, META.typesGB))}%</span>`).join("")}</div>
+      <p class="faint" style="margin:10px 0 0">${num(META.emptyFolders)} empty folders · ${num(META.zeroFiles)} zero-byte files</p></section>
+  </div>`;
+}
+
+/* --- browse --- */
+function vBrowse() {
+  const n = S.node, list = children(n);
+  if (S.sel >= list.length) S.sel = Math.max(0, list.length - 1);
+  const sel = list[S.sel] || n;
+  const arrow = k => S.sort === k ? (S.desc ? " ▼" : " ▲") : "";
+  const rows = list.map((c, i) => `<tr class="row" aria-selected="${i === S.sel}" data-i="${i}">
+      <td class="name"><span class="ico">${c.c ? "▸" : "·"}</span>${esc(c.n)}</td>
+      <td class="num">${fmt(c.s)}</td><td class="barc">${bar(pct(c.s, n.s))}</td>
+      <td class="num muted">${pct(c.s, n.s).toFixed(1)}</td>
+      <td class="num hide-sm muted">${c.files ? num(c.files) : ""}</td>
+      <td><span class="dot" style="color:${AGEC[c.age] || "var(--muted)"}">●</span></td></tr>`).join("");
+  return `<div class="grid g2">
+    <section class="box"><h2>${esc(n === ROOT ? META.rootLabel : n.n)}</h2><span class="rt">${list.length} items</span>
+      ${list.length ? `<table class="list"><thead><tr>
+        <th class="sortable" data-sort="name">NAME${arrow("name")}</th><th class="num sortable" data-sort="size">SIZE${arrow("size")}</th>
+        <th>USAGE</th><th class="num">%</th><th class="num hide-sm sortable" data-sort="files">FILES${arrow("files")}</th><th>AGE</th></tr></thead>
+        <tbody>${rows}</tbody></table>` : `<p class="muted">This folder has no sub-folders in the report.<br>Press <span class="acc">←</span> to go back up.</p>`}
+      <p class="faint" style="margin:10px 0 0"><span class="ok">●</span> &lt; 3 months <span class="warn">●</span> &lt; 1 year <span class="bad">●</span> older</p>
+    </section>
+    <aside class="box"><h2>Details</h2>${details(sel)}</aside></div>`;
+}
+function details(n) {
+  const inside = (n.c || []).slice(0, 5);
+  return `<div class="acc" style="font-weight:700">${n.c ? "▾" : "·"} ${esc(n.n)}${n.c ? "/" : ""}</div>
+   <div class="muted" style="margin-bottom:8px;overflow-wrap:anywhere">${esc(tilde(n.path))}</div>
+   <dl class="kv"><dt>Size on disk</dt><dd><b>${fmt(n.s)}</b></dd>
+     ${n.apparent ? `<dt>Apparent size</dt><dd>${fmt(n.apparent)}</dd>` : ""}
+     ${n.files ? `<dt>Files</dt><dd>${num(n.files)}</dd>` : ""}
+     <dt>Share of scan</dt><dd>${pct(n.s, ROOT.s).toFixed(1)}%</dd>
+     <dt>Last modified</dt><dd style="color:${AGEC[n.age] || "inherit"}">${{ ok:"recently", warn:"this year", bad:"over a year ago" }[n.age] || "—"}</dd></dl>
+   ${n.hard ? `<div class="sub">Links &amp; clones</div><dl class="kv">
+     <dt><span class="info">≡</span> hard links</dt><dd>${n.hard} files <span class="ok">−${fmt(n.hardSaved)}</span></dd>
+     <dt><span class="info">⧉</span> APFS clones</dt><dd>${n.clones} files <span class="ok">−${fmt(n.cloneSaved)}</span></dd></dl>` : ""}
+   ${n.junk ? `<p><span class="badge b-ok">SAFE</span> <span class="muted">known junk · regenerated automatically</span></p>` : ""}
+   ${inside.length ? `<div class="sub">Inside</div><div class="mini">${inside.map(c => `<span>${esc(c.n)}</span>${bar(pct(c.s, n.s), n.col)}<span class="muted">${Math.round(pct(c.s, n.s))}%</span>`).join("")}</div>` : ""}
+   <div class="actions"><button class="btn" data-copy="${esc(tilde(n.path))}">y copy path</button>
+     ${n.c ? `<button class="btn primary" data-into="1">→ open</button>` : ""}</div>`;
+}
+
+/* --- treemap --- */
+function squarify(items, x, y, w, h) {
+  items = items.filter(it => it.s > 0); // nothing to draw for empty entries (and 0/0 would stall the layout)
+  const out = [], total = items.reduce((a, b) => a + b.s, 0); if (!total || w <= 0 || h <= 0) return out;
+  const scale = (w * h) / total; let rest = items.slice();
+  const worst = (row, side) => { const areas = row.map(r => r.s * scale), s = areas.reduce((a, b) => a + b, 0);
+    return Math.max(side * side * Math.max(...areas) / (s * s), (s * s) / (side * side * Math.min(...areas))); };
+  while (rest.length) {
+    const side = Math.min(w, h); let row = [], best = Infinity;
+    while (rest.length) { const cand = row.concat(rest[0]), r = worst(cand, side); if (r <= best) { row = cand; best = r; rest.shift(); } else break; }
+    const thick = row.reduce((a, b) => a + b.s, 0) * scale / side; let off = 0;
+    for (const it of row) { const len = it.s * scale / thick;
+      out.push(w >= h ? { it, x, y: y + off, w: thick, h: len } : { it, x: x + off, y, w: len, h: thick }); off += len; }
+    if (w >= h) { x += thick; w -= thick; } else { y += thick; h -= thick; }
+  }
+  return out;
+}
+function vMap() {
+  return `<section class="box"><h2>Treemap · ${esc(S.mapNode === ROOT ? META.rootLabel : S.mapNode.n)}</h2><span class="rt">area = on-disk size · click to zoom</span>
+    <div class="tm" id="tm"></div><span class="note">${S.mapNode === ROOT ? "hover a block for details" : "⌫ or click the breadcrumb to zoom out"}</span></section>`;
+}
+function drawMap() {
+  const el = $("#tm"); if (!el) return; const W = el.clientWidth, H = el.clientHeight, html = [];
+  const light = c => { const v = parseInt(c.slice(1), 16); return ((v >> 16) * 299 + ((v >> 8) & 255) * 587 + (v & 255) * 114) / 1000 > 120; };
+  const node = S.mapNode;
+  for (const r of squarify(node.c || [], 0, 0, W, H)) {
+    const n = r.it, big = n.c && r.w > 90 && r.h > 60;
+    const label = `<b>${esc(n.n)}</b>${r.h > 32 ? `<span>${fmt(n.s)}</span>` : ""}`;
+    if (big) {
+      html.push(`<div class="r parent" data-n="${esc(n.n)}" style="left:${r.x}px;top:${r.y}px;width:${r.w}px;height:${r.h}px;background:color-mix(in srgb, ${n.col} 45%, #000)"><b>${esc(n.n)} · ${fmt(n.s)}</b></div>`);
+      for (const k of squarify(n.c, r.x + 2, r.y + 20, r.w - 4, r.h - 22)) {
+        const tiny = k.w < 34 || k.h < 18;
+        html.push(`<div class="r" data-n="${esc(n.n)}" data-k="${esc(k.it.n)}" style="left:${k.x}px;top:${k.y}px;width:${k.w}px;height:${k.h}px;background:color-mix(in srgb, ${n.col} ${60 + (k.it.s / n.s) * 40}%, #fff 0%)">${tiny ? "" : `<b>${esc(k.it.n)}</b>${k.h > 32 ? `<span>${fmt(k.it.s)}</span>` : ""}`}</div>`);
+      }
+    } else {
+      html.push(`<div class="r" data-n="${esc(n.n)}" style="left:${r.x}px;top:${r.y}px;width:${r.w}px;height:${r.h}px;background:${n.col};color:${light(n.col) ? "#000" : "#fff"}">${r.w > 34 && r.h > 18 ? label : ""}</div>`);
+    }
+  }
+  el.innerHTML = html.join("");
+  const tip = $("#tip");
+  el.querySelectorAll(".r").forEach(d => {
+    const top = (S.mapNode.c || []).find(c => c.n === d.dataset.n), n = d.dataset.k ? top.c.find(c => c.n === d.dataset.k) : top;
+    d.onmousemove = e => { tip.style.display = "block"; tip.style.left = Math.min(e.clientX + 14, innerWidth - 260) + "px"; tip.style.top = (e.clientY + 14) + "px";
+      tip.innerHTML = `<b class="acc">${esc(tilde(n.path))}</b><br>${fmt(n.s)} · ${pct(n.s, ROOT.s).toFixed(1)}% of scan${n.files ? " · " + num(n.files) + " files" : ""}`; };
+    d.onmouseleave = () => tip.style.display = "none";
+    d.onclick = () => { tip.style.display = "none"; if (n.c) { S.mapNode = n; render(); } else toast(tilde(n.path) + " has no sub-folders in this report"); };
+  });
+}
+
+/* --- types / age / junk / dupes / old --- */
+function vTypes() {
+  return `<div class="grid g2"><section class="box"><h2>What is your disk made of?</h2>
+    <div class="stack">${TYPES.map(([n, s, c]) => `<span title="${n}" style="width:${pct(s, META.typesGB)}%;background:${c}"></span>`).join("")}</div>
+    <table class="list"><thead><tr><th>TYPE</th><th class="num">SIZE</th><th>SHARE</th><th class="num">%</th></tr></thead><tbody>
+    ${TYPES.map(([n, s, c]) => `<tr><td class="name"><span class="sw" style="background:${c}"></span>${n}</td><td class="num">${fmt(s * G)}</td><td class="barc">${bar(pct(s, META.typesGB) * 3, c)}</td><td class="num muted">${Math.round(pct(s, META.typesGB))}</td></tr>`).join("")}
+    </tbody></table><span class="note">share bars scaled ×3</span></section>
+    <section class="box"><h2>Top extensions</h2><table class="list"><thead><tr><th>EXT</th><th class="num">SIZE</th><th class="num">FILES</th></tr></thead><tbody>
+    ${EXTS.map(([e, s, f]) => `<tr><td>${e}</td><td class="num">${fmt(s * G)}</td><td class="num muted">${num(f)}</td></tr>`).join("")}</tbody></table></section></div>`;
+}
+const AGE_MAX = Math.max(1e-9, ...AGE.flatMap(r => r[2]));
+function heatLevel(v) { return v <= 0 ? 0 : Math.max(1, Math.min(6, Math.ceil(6 * Math.log1p(v * 1000) / Math.log1p(AGE_MAX * 1000)))); }
+function vAge() {
+  const ageCols = ["#87d787","#afd787","#d7d787","#ffd787","#ffaf5f","#ff875f","#ff5f5f","#ff0000"];
+  let h = `<span></span><span class="h">SIZE</span>${AGE_BUCKETS.map((b, i) => `<span class="h" style="color:${ageCols[i]}">${b}</span>`).join("")}<span class="h">STALE &gt; 1y</span>`;
+  for (const [n, s, v] of AGE) {
+    const stale = Math.round((v[5] + v[6] + v[7]) / s * 100);
+    h += `<span><b>${n}</b></span><span class="muted" style="text-align:right">${fmt(s * G)}</span>` +
+      v.map((x, i) => { const L = heatLevel(x); return `<span class="c" title="${n} · ${AGE_BUCKETS[i]} · ${x} GB" style="background:var(--heat${L});color:${L >= 4 ? "#000" : "var(--text)"}">${x ? x.toFixed(1) : "·"}</span>`; }).join("") +
+      `<span style="display:flex;gap:6px;align-items:center">${bar(stale, ageCols[Math.min(7, Math.floor(stale / 13))])}<span class="muted">${stale}%</span></span>`;
+  }
+  return `<section class="box"><h2>Age heatmap</h2><span class="rt">brighter = more bytes</span>
+    <p class="lead">Where the bytes sit by last-modified time. <span class="warn">${fmt(META.stale)} (${pct(META.stale, Math.max(1, ROOT.s)).toFixed(0)}% of the scan)</span> hasn't changed in over a year.</p>
+    <div class="heat">${h}</div></section>`;
+}
+function vJunk() {
+  return `<section class="box"><h2>Known junk</h2><span class="rt">${fmt(META.junk)} found · ${fmt(META.junkSafe)} safe</span>
+    <p class="lead">Things that are rebuilt or re-downloaded automatically. <span class="ok">SAFE</span> items can go; <span class="warn">REVIEW</span> items need a look first.</p>
+    <table class="list"><thead><tr><th>RULE</th><th class="num hide-sm">ITEMS</th><th class="num">SIZE</th><th>SHARE</th><th></th><th class="hide-sm">WHY</th></tr></thead><tbody>
+    ${JUNK.map(([n, c, s, safe, why]) => `<tr class="row" data-toast="${esc(why)}"><td class="name">${n}</td><td class="num hide-sm faint">${c}</td><td class="num">${fmt(s * G)}</td>
+      <td class="barc">${bar(pct(s * G, Math.max(1, META.junk)) * 3, "var(--acc2)")}</td><td><span class="badge ${safe === "SAFE" ? "b-ok" : "b-warn"}">${safe}</span></td><td class="hide-sm muted">${why}</td></tr>`).join("")}
+    </tbody></table><span class="note">to clean up, run: hoard junk ${esc(META.root)}</span></section>`;
+}
+function vDupes() {
+  return `<section class="box"><h2>Duplicate files</h2><span class="rt">${META.dupesKnown ? num(META.dupeGroups) + (META.dupeGroups === 1 ? " group · " : " groups · ") + fmt(META.dupes) + " can be freed" : "not looked for in this scan"}</span>
+    <p class="lead">Identical content, confirmed by a full hash. <span class="ok">★</span> marks the copy the keep rule (oldest) would keep.</p>
+    ${DUPES.map(([n, s, paths]) => `<details ${s > 1 ? "open" : ""} style="margin:6px 0"><summary><b>${esc(n)}</b> <span class="muted">${fmt(s * G)} × ${paths.length} copies · wasted</span> <span class="warn">${fmt(s * G * (paths.length - 1))}</span></summary>
+      <div style="padding:4px 0 4px 1.5em">${paths.map((p, i) => `<div>${i ? `<span class="faint">○</span>` : `<span class="ok">★</span>`} <span style="overflow-wrap:anywhere">${esc(p)}</span></div>`).join("")}</div></details>`).join("")}
+    ${META.dupesKnown ? (META.dupeGroups > DUPES.length ? `<p class="muted">+ ${num(META.dupeGroups - DUPES.length)} more groups</p>` : "") : `<p class="muted">Open the Dupes tab (6) in Hoard before exporting to include duplicates.</p>`}
+    <p class="muted"><span class="info">≡</span> Hard links (one file under several names) are counted once and never listed as duplicates.</p></section>`;
+}
+function vOld() {
+  return `<section class="box"><h2>Big &amp; old</h2><span class="rt">${num(META.oldCount)} files · ${fmt(META.old)}</span>
+    <p class="lead">${esc(META.oldRule)}</p>
+    <table class="list"><thead><tr><th class="num">SIZE</th><th class="hide-sm">LAST OPENED</th><th>AGE</th><th>PATH</th></tr></thead><tbody>
+    ${OLD.map(([s, d, a, p]) => `<tr class="row" data-copy="${esc(p)}"><td class="num"><b>${fmt(s * G)}</b></td><td class="hide-sm muted">${d}</td>
+      <td style="width:18%"><div style="display:flex;gap:6px;align-items:center">${bar(a / 5 * 100, a >= 3.5 ? "var(--bad)" : a >= 2.5 ? "#ff875f" : "var(--warn)")}<span class="muted">${a}y</span></div></td>
+      <td class="name" style="width:auto">${esc(p)}</td></tr>`).join("")}
+    </tbody></table><span class="note">${META.oldCount > OLD.length ? "+ " + num(META.oldCount - OLD.length) + " more files · " : ""}click a row to copy its path</span></section>`;
+}
+
+/* ---------------- render & events ---------------- */
+const RENDER = { overview:vOverview, browse:vBrowse, map:vMap, types:vTypes, age:vAge, junk:vJunk, dupes:vDupes, old:vOld };
+function render() {
+  renderTabs(); renderCrumbs(); renderFoot();
+  $("#main").innerHTML = RENDER[S.view]();
+  if (S.view === "map") drawMap();
+  const m = $("#main");
+  m.querySelectorAll("[data-go]").forEach(b => b.onclick = () => go(b.dataset.go));
+  m.querySelectorAll("[data-open]").forEach(r => r.onclick = () => { S.node = ROOT.c.find(c => c.n === r.dataset.open); S.sel = 0; go("browse"); });
+  m.querySelectorAll("[data-copy]").forEach(b => b.onclick = () => copy(b.dataset.copy));
+  m.querySelectorAll("[data-toast]").forEach(b => b.onclick = () => toast(b.dataset.toast));
+  m.querySelectorAll("[data-into]").forEach(b => b.onclick = () => into());
+  m.querySelectorAll("[data-sort]").forEach(h => h.onclick = () => { const k = h.dataset.sort; if (S.sort === k) S.desc = !S.desc; else { S.sort = k; S.desc = k !== "name"; } render(); });
+  m.querySelectorAll("tr[data-i]").forEach(r => { r.onclick = () => { S.sel = +r.dataset.i; render(); }; r.ondblclick = () => { S.sel = +r.dataset.i; into(); }; });
+  const selRow = m.querySelector('tr[aria-selected="true"]'); if (selRow) selRow.scrollIntoView({ block:"nearest" });
+}
+function go(v) { S.view = v; render(); scrollTo(0, 0); }
+function into() { const c = children(S.node)[S.sel]; if (c && c.c) { S.node = c; S.sel = 0; render(); } else if (c) toast(c.n + " has no sub-folders in this report"); }
+function up() { if (S.node.parent) { const from = S.node; S.node = from.parent; S.sel = Math.max(0, children(S.node).indexOf(from)); render(); } }
+
+$("#tabs").onclick = e => { const b = e.target.closest("[data-v]"); if (b) go(b.dataset.v); };
+const THEMES = ["hoard", "neon", "frost", "mono"];
+function setTheme(t) { $("#app").dataset.theme = t; document.documentElement.dataset.theme = t; $("#theme").value = t; if (S.view === "map") drawMap(); }
+$("#theme").onchange = e => setTheme(e.target.value);
+let rz; addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(drawMap, 80); });
+
+/* find */
+const ALL = []; (function walk(n) { if (n !== ROOT) ALL.push(n); (n.c || []).forEach(walk); })(ROOT);
+let fSel = 0, fRes = [];
+function fuzzy(q, s) { let i = 0, out = "", score = 0, last = -2; const L = s.toLowerCase();
+  for (let j = 0; j < s.length; j++) { if (i < q.length && L[j] === q[i]) { out += "<mark>" + esc(s[j]) + "</mark>"; score += (j === last + 1 ? 3 : 1); last = j; i++; } else out += esc(s[j]); }
+  return i === q.length ? { out, score } : null; }
+function runFind() {
+  const q = $("#findIn").value.toLowerCase().replace(/\s+/g, "");
+  fRes = ALL.map(n => { const m = q ? fuzzy(q, tilde(n.path)) : { out: esc(tilde(n.path)), score: 0 }; return m && { n, ...m }; })
+    .filter(Boolean).sort((a, b) => b.score - a.score || b.n.s - a.n.s).slice(0, 12);
+  fSel = Math.min(fSel, Math.max(0, fRes.length - 1));
+  $("#findCount").textContent = fRes.length ? fRes.length + " shown" : "no matches";
+  $("#findRes").innerHTML = fRes.length ? fRes.map((r, i) => `<li aria-selected="${i === fSel}" data-f="${i}"><span class="p">${r.out}</span><span class="muted">${fmt(r.n.s)}</span></li>`).join("")
+    : `<li class="muted">Nothing matches "${esc($("#findIn").value)}". Try fewer letters.</li>`;
+  $("#findRes").querySelectorAll("[data-f]").forEach(li => li.onclick = () => { fSel = +li.dataset.f; jump(); });
+}
+function openFind() { $("#find").classList.add("open"); $("#findIn").value = ""; fSel = 0; runFind(); $("#findIn").focus(); }
+function jump() { const r = fRes[fSel]; if (!r) return; closeAll(); const n = r.n;
+  if (n.parent) { S.node = n.parent; S.sel = children(n.parent).indexOf(n); } go("browse"); }
+function closeAll() { document.querySelectorAll(".overlay.open").forEach(o => o.classList.remove("open")); }
+$("#findIn").oninput = () => { fSel = 0; runFind(); };
+document.querySelectorAll(".overlay").forEach(o => o.onclick = e => { if (e.target === o) closeAll(); });
+
+addEventListener("keydown", e => {
+  const open = document.querySelector(".overlay.open");
+  if (open) {
+    if (e.key === "Escape") { closeAll(); e.preventDefault(); }
+    else if (open.id === "find") {
+      if (e.key === "ArrowDown") { fSel = Math.min(fSel + 1, fRes.length - 1); runFind(); e.preventDefault(); }
+      else if (e.key === "ArrowUp") { fSel = Math.max(fSel - 1, 0); runFind(); e.preventDefault(); }
+      else if (e.key === "Enter") { jump(); e.preventDefault(); }
+    } else if (e.key === "?") closeAll();
+    return;
+  }
+  if (e.target.matches("input, select") || e.metaKey || e.ctrlKey || e.altKey) return;
+  const k = e.key, list = S.view === "browse" ? children(S.node) : null;
+  if (/^[1-8]$/.test(k)) go(VIEWS[+k - 1][0]);
+  else if (k === "/" || k === ":") openFind();
+  else if (k === "?") $("#help").classList.add("open");
+  else if (k === "t") setTheme(THEMES[(THEMES.indexOf($("#app").dataset.theme) + 1) % THEMES.length]);
+  else if (k === "J") go("junk"); else if (k === "D") go("dupes"); else if (k === "O") go("old");
+  else if (S.view === "browse" && (k === "ArrowDown" || k === "j")) { S.sel = Math.min(S.sel + 1, list.length - 1); render(); }
+  else if (S.view === "browse" && (k === "ArrowUp" || k === "k")) { S.sel = Math.max(S.sel - 1, 0); render(); }
+  else if (S.view === "browse" && (k === "ArrowRight" || k === "Enter" || k === "l")) into();
+  else if (S.view === "browse" && (k === "ArrowLeft" || k === "Backspace" || k === "h")) up();
+  else if (S.view === "browse" && k === "s") { S.sort = { size:"name", name:"files", files:"size" }[S.sort]; S.desc = S.sort !== "name"; render(); }
+  else if (S.view === "browse" && k === "S") { S.desc = !S.desc; render(); }
+  else if (S.view === "browse" && k === "y") { const c = list[S.sel]; if (c) copy(tilde(c.path)); }
+  else if (S.view === "map" && (k === "Backspace" || k === "ArrowLeft") && S.mapNode.parent) { S.mapNode = S.mapNode.parent; render(); }
+  else if (S.view === "overview" && k === "ArrowRight") go("browse");
+  else if (k === "Escape" && S.view !== "overview") { if (S.view === "browse" && S.node.parent) up(); else go("overview"); }
+  else return;
+  e.preventDefault();
+});
+render();
+</script>
+</body>
+</html>

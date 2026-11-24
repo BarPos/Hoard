@@ -15,6 +15,8 @@ public sealed class HitMap
     public List<(int X0, int X1, ViewKind View)> Tabs { get; } = [];
     /// <summary>Top-level treemap blocks (Map view only).</summary>
     public List<MapBlock> Blocks { get; } = [];
+    /// <summary>Clickable list rows outside the browser (Overview top entries): row, columns, index.</summary>
+    public List<(int Y, int X0, int X1, int Index)> Items { get; } = [];
 }
 
 /// <summary>Draws whole screens. Pure functions of state → canvas, so they can be snapshot-tested.</summary>
@@ -39,7 +41,7 @@ public static partial class Screens
             < 2 => "yesterday",
             < 31 => $"{(int)days} days ago",
             < 365 => $"{(int)(days / 30.4)} months ago",
-            _ => (days / 365.25).ToString("0.0", CultureInfo.InvariantCulture) + " years ago",
+            _ => (Math.Floor(days / 365.25 * 10) / 10).ToString("0.0", CultureInfo.InvariantCulture) + " years ago", // floor: never older than it is
         };
     }
 
@@ -49,7 +51,7 @@ public static partial class Screens
     // ── chrome ───────────────────────────────────────────────────────────────
 
     private static readonly (ViewKind View, string Key, string Label)[] TabList =
-        [(ViewKind.Browse, "2", "Browse"), (ViewKind.Map, "3", "Map"), (ViewKind.Junk, "7", "Junk")];
+        [(ViewKind.Overview, "1", "Overview"), (ViewKind.Browse, "2", "Browse"), (ViewKind.Map, "3", "Map"), (ViewKind.Types, "4", "Types"), (ViewKind.Age, "5", "Age"), (ViewKind.Dupes, "6", "Dupes"), (ViewKind.Junk, "7", "Junk"), (ViewKind.BigOld, "8", "Big+Old"), (ViewKind.Empty, "9", "Empty"), (ViewKind.Snaps, "0", "Snaps")];
 
     private static void Header(Painter p, ViewKind active, string right, HitMap? hits = null)
     {
@@ -63,12 +65,18 @@ public static partial class Screens
             x = p.Text(x, 0, logo[i].ToString(), t.GradientAt(i / 6.0), t.Bar, TextAttr.Bold);
         }
         x = p.Text(x + 1, 0, "│", t.Faint, t.Bar);
+        // Full labels when they fit beside the status; otherwise only the active tab keeps its name.
+        int Need(bool full) => TabList.Sum(tab => 1 + Cells.Width(tab.Key) + 2 + (full || tab.View == active ? Cells.Width(tab.Label) + 1 : 0));
+        bool fullLabels = x + Need(true) + Cells.Width(right) + 3 <= c.Width;
         foreach (var (view, key, label) in TabList)
         {
             int x0 = x + 1;
             bool on = view == active;
             x = p.Text(x0, 0, " " + key + " ", on ? Rgb.Hex(0x000000) : t.Faint, on ? t.Accent : t.Bar);
-            x = p.Text(x, 0, label + " ", on ? Rgb.Hex(0x000000) : t.Muted, on ? t.Accent : t.Bar, on ? TextAttr.Bold : TextAttr.None);
+            if (fullLabels || on)
+            {
+                x = p.Text(x, 0, label + " ", on ? Rgb.Hex(0x000000) : t.Muted, on ? t.Accent : t.Bar, on ? TextAttr.Bold : TextAttr.None);
+            }
             hits?.Tabs.Add((x0, x, view));
         }
         int rw = Cells.Width(right);
@@ -154,6 +162,22 @@ public static partial class Screens
             TooSmall(c, t);
             return hits;
         }
+        if (m.SplashOpen)
+        {
+            return SplashView(c, m);
+        }
+        if (m.SettingsOpen)
+        {
+            return SettingsView(c, m);
+        }
+        if (m.VolumesOpen)
+        {
+            return VolumesView(c, m);
+        }
+        if (m.ScanScreen && m.Scanning)
+        {
+            return ScanningView(c, m);
+        }
         if (m.View == ViewKind.Map)
         {
             return Map(c, m);
@@ -161,6 +185,38 @@ public static partial class Screens
         if (m.View == ViewKind.Junk)
         {
             return JunkView(c, m);
+        }
+        if (m.View == ViewKind.Overview)
+        {
+            return Overview(c, m);
+        }
+        if (m.View == ViewKind.Types)
+        {
+            return TypesView(c, m);
+        }
+        if (m.View == ViewKind.Age)
+        {
+            return AgeView(c, m);
+        }
+        if (m.View == ViewKind.BigOld)
+        {
+            return BigOldView(c, m);
+        }
+        if (m.View == ViewKind.Empty)
+        {
+            return EmptyView(c, m);
+        }
+        if (m.View == ViewKind.Dupes)
+        {
+            return DupesView(c, m);
+        }
+        if (m.View == ViewKind.Snaps)
+        {
+            return SnapsView(c, m);
+        }
+        if (m.View == ViewKind.Watch)
+        {
+            return WatchView(c, m);
         }
         var p = new Painter(c, t);
         p.Clear();
@@ -173,7 +229,7 @@ public static partial class Screens
         // Box(es)
         int lw = layout.ListWidth;
         string title = m.Current == NodeStore.Root ? Shorten(m.RootPath) : s.Name(m.Current);
-        string count = $"{m.Rows.Count} items";
+        string count = m.ListFilter is { } filter ? $"{m.Rows.Count} matching “{filter}” · esc clears" : $"{m.Rows.Count} items";
         if (layout.ShowDetails)
         {
             p.HLine(0, layout.BoxTop, lw + 4, '╭', '┬', title, count);
@@ -219,6 +275,7 @@ public static partial class Screens
             return $"● {count} marked · {Units.Size(size)}";
         }
         return m.Scanning ? $"{Spin[m.Tick % Spin.Length]} scanning… q stops"
+            : m.RescanFolder is int rf ? $"{Spin[m.Tick % Spin.Length]} rescanning {(rf == NodeStore.Root ? "everything" : m.Store.Name(rf))}…"
             : m.ErrorCount > 0 ? $"! {Units.Count(m.ErrorCount)} unreadable"
             : m.HardLinkDuplicates > 0 ? $"≡ {Units.Count(m.HardLinkDuplicates)} hard links once" : "";
     }
@@ -233,6 +290,70 @@ public static partial class Screens
         {
             Help(p);
         }
+        if (m.Export is { } export && !m.HelpOpen)
+        {
+            ExportBox(p, m, export);
+        }
+        if (m.Search is { } search && !m.HelpOpen)
+        {
+            SearchOverlay(p, m, search);
+        }
+        if (m.Palette is { } palette && !m.HelpOpen)
+        {
+            PaletteOverlay(p, m, palette);
+        }
+        if (m.TourStep is int step && !m.HelpOpen)
+        {
+            TourBox(p, step);
+        }
+        if (m.QuitConfirmOpen)
+        {
+            QuitBox(p, m);
+        }
+    }
+
+    private static void QuitBox(Painter p, BrowserModel m)
+    {
+        Theme t = p.Theme;
+        ICanvas c = p.Canvas;
+        var notes = new List<string>();
+        if (m.Scanning)
+        {
+            notes.Add("The scan is still running and will stop.");
+        }
+        var (marked, _) = m.MarkedSummary();
+        if (marked > 0)
+        {
+            notes.Add($"Your {marked} mark{(marked == 1 ? "" : "s")} will be lost.");
+        }
+        if (m.Dialog is { Stage: DialogStage.Running })
+        {
+            notes.Add("A delete is still in progress.");
+        }
+        int w = Math.Min(c.Width - 4, 46), h = 6 + notes.Count;
+        int x0 = (c.Width - w) / 2, y0 = Math.Max(1, (c.Height - h) / 2);
+        c.Fill(x0, y0, w, h, new Style(t.Text, t.Panel));
+        c.Fill(x0, y0, w, 1, new Style(t.Border, t.Panel), '─');
+        c.Text(x0, y0, "╭", new Style(t.Border, t.Panel));
+        c.Text(x0 + w - 1, y0, "╮", new Style(t.Border, t.Panel));
+        c.Text(x0 + 2, y0, " Quit Hoard? ", new Style(t.Accent, t.Panel, TextAttr.Bold));
+        for (int i = 1; i < h - 1; i++)
+        {
+            c.Text(x0, y0 + i, "│", new Style(t.Border, t.Panel));
+            c.Text(x0 + w - 1, y0 + i, "│", new Style(t.Border, t.Panel));
+        }
+        c.Fill(x0, y0 + h - 1, w, 1, new Style(t.Border, t.Panel), '─');
+        c.Text(x0, y0 + h - 1, "╰", new Style(t.Border, t.Panel));
+        c.Text(x0 + w - 1, y0 + h - 1, "╯", new Style(t.Border, t.Panel));
+        int y = y0 + 2;
+        foreach (string n in notes)
+        {
+            c.Text(x0 + 3, y++, Cells.Fit(n, w - 6).TrimEnd(), new Style(t.Warn, t.Panel));
+        }
+        int bx = x0 + 3;
+        c.Text(bx, y + 1, " y Quit ", new Style(Rgb.Hex(0x000000), t.Accent, TextAttr.Bold));
+        c.Text(bx + 10, y + 1, " n Stay ", new Style(t.Text, t.Panel, TextAttr.Bold));
+        c.Text(bx + 20, y + 1, Cells.Fit("↵ quits · esc stays", Math.Max(0, w - 26)).TrimEnd(), new Style(t.Muted, t.Panel));
     }
 
     private static void DeleteDialogBox(Painter p, DeleteDialog d)
@@ -458,8 +579,9 @@ public static partial class Screens
             int id = m.Rows[index];
             int y = l.FirstRow + row;
             bool sel = index == m.Selected;
-            Rgb bg = sel ? t.Selection : t.Bg;
-            if (sel)
+            bool hover = !sel && m.HoverY == y;
+            Rgb bg = sel ? t.Selection : hover ? t.Track : t.Bg;
+            if (sel || hover)
             {
                 c.Fill(x - 1, y, l.ListWidth + 2, 1, new Style(t.Text, bg));
             }
@@ -594,17 +716,36 @@ public static partial class Screens
     {
         Theme t = p.Theme;
         ICanvas c = p.Canvas;
+        // Everyday keys first; per-view keys after (in two columns they land on the right).
         (string, string)[] rows =
         [
-            ("tab  2 3 7", "switch view: list · treemap · junk (also J)"),
-            ("↑↓  j k", "move (map: ←↑↓→ between blocks)"), ("→ ↵  l", "open folder / zoom in"), ("← ⌫  h", "up one level / zoom out"), ("g  G", "top / bottom"),
-            ("PgUp PgDn", "page"), ("s  S", "sort field / reverse"), ("z", "on-disk ↔ apparent size"), ("+  -", "treemap depth"),
-            ("t", "next theme"), ("o", "reveal in Finder"), ("y", "copy path"),
+            ("↑↓  j k", "move (map: ←↑↓→ between blocks)"), ("→ ↵  l", "open folder / zoom in"), ("← ⌫  h", "up one level / zoom out"),
+            ("g  G", "top / bottom"), ("PgUp PgDn", "page"),
+            ("tab", "next view"), ("1-9 0", "overview list map types age dupes junk old empty snaps"),
+            ("P  x", "save a snapshot · export"), ("r  R", "rescan this folder · everything"), ("X", "exclude the entry (saved in settings)"),
+            ("D  J  O  E", "dupes · junk · big & old · empty"),
             ("␣  A", "mark · mark all"), ("d", "delete marked (or selected)…"), ("u", "clear marks · undo delete"),
-            ("esc", "close / back"), ("q", "quit"),
+            ("o  y", "reveal in Finder · copy path"), ("/", "find anywhere (^f filters the list)"),
+            ("s  S", "sort field / reverse"), ("z", "on-disk ↔ apparent size"),
+            ("t  ,", "next theme (saved) · settings"), (":", "do anything by name"),
+            ("v  w", "volumes (pick a disk) · watch changes live"), ("esc  q", "close or back · quit"),
+            ("b", "scanning: skip to the results"),
+            ("+  -", "map depth · age rows"), ("e", "types: by category ↔ by extension"),
+            ("m  a", "age: by modified / by last access"), ("f", "big & old: filters"),
+            ("K", "dupes: keep rule · empty: .gitkeep"), ("a", "dupes: select all but the kept copy"), ("c  i", "junk: clean ticked · why"),
             ("mouse", "click selects · double-click opens · wheel scrolls"),
         ];
-        int w = Math.Min(c.Width - 4, 58), h = rows.Length + 4;
+        bool two = c.Width >= 112;
+        int colW = two ? Math.Min(60, (c.Width - 10) / 2) : 56;
+        int perCol = two ? (rows.Length + 1) / 2 : rows.Length;
+        int fit = Math.Max(1, c.Height - 6);
+        bool cut = perCol > fit;
+        if (cut)
+        {
+            perCol = fit - 1; // leave a line for the note
+        }
+        int w = two ? Math.Min(c.Width - 4, colW * 2 + 6) : Math.Min(c.Width - 4, colW + 4);
+        int h = perCol + (cut ? 1 : 0) + 4;
         int x0 = (c.Width - w) / 2, y0 = Math.Max(1, (c.Height - h) / 2);
         c.Fill(x0, y0, w, h, new Style(t.Text, t.Panel));
         p.HLine(x0, y0, w, '╭', '╮', $"Hoard {Hoard.Core.AppInfo.Version} · keys", "any key closes");
@@ -614,11 +755,26 @@ public static partial class Screens
             p.Text(x0 + w - 1, y0 + i, "│", t.Border, t.Panel);
         }
         p.HLine(x0, y0 + h - 1, w, '╰', '╯');
-        for (int i = 0; i < rows.Length; i++)
+        int cols = two ? 2 : 1;
+        int textW = (two ? (w - 6) / 2 : w - 4) - 14;
+        for (int col = 0; col < cols; col++)
         {
-            var (k, d) = rows[i];
-            p.Text(x0 + 3, y0 + 2 + i, Cells.Fit(k, 11), t.Accent, t.Panel, TextAttr.Bold);
-            p.Text(x0 + 15, y0 + 2 + i, Cells.Fit(d, w - 18).TrimEnd(), t.Text, t.Panel);
+            int cx = x0 + 3 + col * ((w - 6) / 2 + 1);
+            for (int i = 0; i < perCol; i++)
+            {
+                int index = col * ((rows.Length + 1) / 2) + i;
+                if (index >= rows.Length || (col == 0 && two && index >= (rows.Length + 1) / 2))
+                {
+                    break;
+                }
+                var (k, d) = rows[index];
+                p.Text(cx, y0 + 2 + i, Cells.Fit(k, 11), t.Accent, t.Panel, TextAttr.Bold);
+                p.Text(cx + 12, y0 + 2 + i, Cells.Fit(d, textW).TrimEnd(), t.Text, t.Panel);
+            }
+        }
+        if (cut)
+        {
+            p.Text(x0 + 3, y0 + h - 2, Cells.Fit("… a taller or wider window shows every key", w - 6).TrimEnd(), t.Muted, t.Panel);
         }
     }
 }

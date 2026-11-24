@@ -8,7 +8,7 @@ using Hoard.Core.Scanning;
 using Hoard.Platform;
 
 // Exit codes (plan.md §10): 0 ok · 1 error · 2 usage · 3 threshold exceeded · 130 interrupted.
-const int ExitOk = 0, ExitError = 1, ExitUsage = 2, ExitInterrupted = 130;
+const int ExitOk = 0, ExitError = 1, ExitUsage = 2, ExitThreshold = 3, ExitInterrupted = 130;
 
 var pathArg = new Argument<string>("path") { Description = "Folder to scan", DefaultValueFactory = _ => "." };
 var noTui = new Option<bool>("--no-tui") { Description = "Print a summary instead of opening the interactive view" };
@@ -20,43 +20,110 @@ var exclude = new Option<string[]>("--exclude", "-x") { Description = "gitignore
 var threads = new Option<int>("--threads") { Description = "Scanner threads (0 = automatic)" };
 var crossFs = new Option<bool>("--cross-fs") { Description = "Descend into other file systems (default: stay on one)" };
 var noColor = new Option<bool>("--no-color") { Description = "Disable colour (also honoured: NO_COLOR)" };
-var theme = new Option<string>("--theme") { Description = "Colour theme: hoard, neon, frost or mono", DefaultValueFactory = _ => "hoard" };
+var theme = new Option<string>("--theme") { Description = "Colour theme: hoard, neon, frost or mono (default: from settings)" };
 var stats = new Option<bool>("--stats") { Description = "Print scanner statistics (nodes, memory, throughput) to stderr" };
+var export = new Option<string>("--export") { Description = "Write a report instead of a summary: json, csv, html, pretty-html, markdown or ncdu" };
+var output = new Option<string>("--output", "-o") { Description = "File for --export (default: standard output)" };
+var depth = new Option<int>("--depth") { Description = "Levels of folders in an export (0 = all; pretty-html defaults to 6)" };
+var minSize = new Option<string>("--min-size") { Description = "Leave out entries smaller than this in an export, e.g. 1MB" };
+var foldersOnly = new Option<bool>("--folders-only") { Description = "Exports list folders only, not files" };
+var dupes = new Option<bool>("--dupes") { Description = "Also look for duplicate files for the export (reads file contents)" };
+var animateOpt = new Option<bool>("--animate") { Description = "Show the splash even if animations are off in settings" };
+var noAnimate = new Option<bool>("--no-animate") { Description = "Skip the splash (also: HOARD_ANIMATE=0)" };
+var failOver = new Option<string>("--fail-over") { Description = "Exit with code 3 if the scanned total is over this size, e.g. 50GB (for scripts and CI)" };
 
 var root = new RootCommand("hoard — what's hoarding my disk?")
 {
     pathArg, noTui, top, json, apparent, iec, exclude, threads, crossFs, noColor, theme, stats,
+    export, output, depth, minSize, foldersOnly, dupes, failOver, animateOpt, noAnimate,
 };
 root.Subcommands.Add(JunkCommand.Create());
+foreach (Command report in Hoard.Cli.ReportCommands.Create())
+{
+    root.Subcommands.Add(report);
+}
 
 root.SetAction(parse =>
 {
     var term = new Tty(parse.GetValue(noColor));
     bool asJson = parse.GetValue(json);
-    bool useApparent = parse.GetValue(apparent);
-    bool useIec = parse.GetValue(iec);
+    // Saved settings (~/.config/hoard/config.toml); flags on the command line win for this run.
+    string settingsPath = Hoard.Core.Config.SettingsFile.DefaultPath();
+    var (settings, settingsProblems) = Hoard.Core.Config.SettingsFile.Load(settingsPath);
+    bool useApparent = parse.GetValue(apparent) || settings.ApparentSizes;
+    bool useIec = parse.GetValue(iec) || settings.Iec;
+    Units.DefaultIec = useIec;
     int topN = Math.Max(0, parse.GetValue(top));
 
     using var cts = new CancellationTokenSource();
     Console.CancelKeyPress += (_, e) => { e.Cancel = true; cts.Cancel(); };
 
-    var scanner = new Scanner(FileProbes.ForCurrentPlatform(), new ScanOptions
+    var scanOptions = new ScanOptions
     {
-        Threads = parse.GetValue(threads),
-        Excludes = parse.GetValue(exclude) ?? [],
-        CrossFileSystems = parse.GetValue(crossFs),
-        AliasPaths = MacFirmlinks.AliasesFor(ResolveRoot(parse.GetValue(pathArg)!)),
-    });
+        Threads = parse.GetResult(threads) is null ? settings.Threads : parse.GetValue(threads),
+        Excludes = [.. settings.Exclude, .. parse.GetValue(exclude) ?? []],
+        CrossFileSystems = parse.GetValue(crossFs) || settings.CrossFileSystems,
+    };
+    // Each scanned folder gets its own firmlink aliases (scanning / must not count the Data volume twice).
+    Scanner ScannerFor(string path) => new(FileProbes.ForCurrentPlatform(), scanOptions with { AliasPaths = MacFirmlinks.AliasesFor(ResolveRoot(path)) });
+    var scanner = ScannerFor(parse.GetValue(pathArg)!);
 
-    // Interactive terminal → the TUI; --no-tui, --json or redirected input/output → the summary.
-    bool tui = !parse.GetValue(noTui) && !asJson && term.Interactive && !Console.IsInputRedirected;
+    // Export and threshold options are checked before scanning, so a typo doesn't cost a scan.
+    Hoard.Core.Export.ExportFormat? exportFormat = null;
+    if (parse.GetValue(export) is { } fmt)
+    {
+        exportFormat = fmt.ToLowerInvariant().Replace("_", "-") switch
+        {
+            "json" => Hoard.Core.Export.ExportFormat.Json,
+            "csv" => Hoard.Core.Export.ExportFormat.Csv,
+            "html" => Hoard.Core.Export.ExportFormat.Html,
+            "pretty-html" or "pretty" => Hoard.Core.Export.ExportFormat.PrettyHtml,
+            "markdown" or "md" => Hoard.Core.Export.ExportFormat.Markdown,
+            "ncdu" => Hoard.Core.Export.ExportFormat.Ncdu,
+            _ => null,
+        };
+        if (exportFormat is null)
+        {
+            Console.Error.WriteLine($"hoard: unknown export format '{fmt}' (try json, csv, html, pretty-html, markdown or ncdu)");
+            return ExitUsage;
+        }
+    }
+    long minBytes = 0, failBytes = -1;
+    if (parse.GetValue(minSize) is { } ms && !Units.TryParseSize(ms, out minBytes))
+    {
+        Console.Error.WriteLine($"hoard: --min-size: '{ms}' isn't a size (try 1MB or 500k)");
+        return ExitUsage;
+    }
+    if (parse.GetValue(failOver) is { } fo && !Units.TryParseSize(fo, out failBytes))
+    {
+        Console.Error.WriteLine($"hoard: --fail-over: '{fo}' isn't a size (try 50GB)");
+        return ExitUsage;
+    }
+
+    // Interactive terminal → the TUI; --no-tui, --json, --export or redirected input/output → the summary.
+    bool tui = !parse.GetValue(noTui) && !asJson && exportFormat is null && failBytes < 0 && term.Interactive && !Console.IsInputRedirected;
     if (tui)
     {
-        string themeName = parse.GetValue(theme) ?? "hoard";
-        if (!Hoard.Tui.Rendering.Theme.All.Any(t => t.Name == themeName))
+        string? flagTheme = parse.GetValue(theme);
+        if (flagTheme is not null && !Hoard.Tui.Rendering.Theme.All.Any(t => t.Name == flagTheme))
         {
-            Console.Error.WriteLine($"hoard: unknown theme '{themeName}' (try hoard, neon, frost or mono)");
+            Console.Error.WriteLine($"hoard: unknown theme '{flagTheme}' (try hoard, neon, frost or mono)");
             return ExitUsage;
+        }
+        string? note = settingsProblems.Count > 0 ? $"settings: {settingsProblems[0]}" + (settingsProblems.Count > 1 ? $" (+{settingsProblems.Count - 1} more)" : "") : null;
+        if (!Hoard.Tui.Rendering.Theme.All.Any(t => t.Name == settings.Theme))
+        {
+            note ??= $"settings: unknown theme '{settings.Theme}', using hoard";
+            settings.Theme = "hoard";
+        }
+        string themeName = flagTheme ?? settings.Theme;
+        if (parse.GetValue(noAnimate))
+        {
+            Environment.SetEnvironmentVariable("HOARD_ANIMATE", "0");
+        }
+        else if (parse.GetValue(animateOpt))
+        {
+            Environment.SetEnvironmentVariable("HOARD_ANIMATE", "1");
         }
         string target = parse.GetValue(pathArg)!;
         if (!Directory.Exists(target))
@@ -64,7 +131,7 @@ root.SetAction(parse =>
             Console.Error.WriteLine(term.Fg(Tty.Bad, "hoard: ") + "Not a directory: " + target);
             return ExitError;
         }
-        return Hoard.Tui.TuiApp.Run(target, scanner, Hoard.Tui.Rendering.Theme.Named(themeName));
+        return Hoard.Tui.TuiApp.Run(target, scanner, Hoard.Tui.Rendering.Theme.Named(themeName), settings, settingsPath, useApparent, note, ScannerFor);
     }
 
     long memBefore = parse.GetValue(stats) ? HeapAfterFullGc() : 0;
@@ -92,13 +159,27 @@ root.SetAction(parse =>
             $"stats: {nodes} nodes · {(memAfter - memBefore) / per} B/node managed heap (arrays {result.Store.AllocatedNodeBytes / per} + names {result.Store.Names.AllocatedBytes / per}) · {result.Elapsed.TotalSeconds:0.000} s · {nodes / Math.Max(0.001, result.Elapsed.TotalSeconds):0} nodes/s · probe {result.ProbeName}"));
     }
 
-    if (asJson)
+    if (exportFormat is { } format)
+    {
+        int code = Hoard.Cli.ExportCommand.Write(result, format, settings, parse.GetValue(output), parse.GetValue(depth), minBytes,
+            !parse.GetValue(foldersOnly), useApparent, parse.GetValue(dupes), term, cts.Token);
+        if (code != ExitOk)
+        {
+            return code;
+        }
+    }
+    else if (asJson)
     {
         Console.Out.WriteLine(JsonSerializer.Serialize(BuildJson(result, topN, useApparent), HoardJson.Default.JsonReport));
     }
     else
     {
         PrintSummary(result, topN, useApparent, useIec, term);
+    }
+    if (failBytes >= 0 && SizeOf(result.Store, NodeStore.Root, useApparent) > failBytes)
+    {
+        Console.Error.WriteLine($"hoard: {Units.Size(SizeOf(result.Store, NodeStore.Root, useApparent))} is over the --fail-over limit of {Units.Size(failBytes)}");
+        return ExitThreshold;
     }
     return result.Cancelled ? ExitInterrupted : ExitOk;
 });

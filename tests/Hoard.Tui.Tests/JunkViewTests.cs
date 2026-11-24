@@ -27,6 +27,7 @@ public sealed class JunkViewTests : IDisposable
         ScanSession session = new Scanner(FileProbes.ForCurrentPlatform()).Start(_root);
         session.Completion.Wait();
         _m = new BrowserModel(session) { View = ViewKind.Junk };
+        _m.WaitForJunk();
         _ctl = new BrowserController(_m, new FakeShell(), new Hoard.Core.Actions.Deleter(session.Store, session.RootPath, FileProbes.ForCurrentPlatform(), _trash));
     }
 
@@ -104,5 +105,42 @@ public sealed class JunkViewTests : IDisposable
         Assert.Equal(ViewKind.Browse, _m.View);
         Assert.Equal("node_modules", _m.Store.Name(_m.SelectedNode!.Value));
         Assert.Equal("web", _m.Store.Name(_m.Current));
+    }
+
+    [Fact]
+    public async Task Shows_progress_while_the_report_is_being_worked_out()
+    {
+        ScanSession session = new Scanner(FileProbes.ForCurrentPlatform()).Start(_root);
+        await session.Completion;
+        var m = new BrowserModel(session) { View = ViewKind.Junk };
+        // Nothing computed yet: drawing never blocks; it starts the search and shows progress.
+        Assert.True(m.JunkLoading);
+        var c = new MemoryCanvas(110, 26);
+        Screens.Browser(c, m);
+        string screen = c.ToString();
+        Assert.True(screen.Contains("Looking for junk") || screen.Contains("node_modules"));
+        if (screen.Contains("Looking for junk"))
+        {
+            Assert.Contains("folders checked", screen);
+        }
+        Assert.NotNull(m.WaitForJunk());
+        Assert.False(m.JunkLoading);
+        c = new MemoryCanvas(110, 26);
+        Screens.Browser(c, m);
+        Assert.DoesNotContain("Looking for junk", c.ToString());
+        Assert.Contains("node_modules", c.ToString());
+    }
+
+    [Fact]
+    public void Overview_shows_the_junk_total_as_a_big_number()
+    {
+        _m.View = ViewKind.Overview;
+        MemoryCanvas c = Render(110, 30);
+        string s = c.ToString();
+        Assert.Contains("could be freed", s);
+        Assert.Contains("Known junk", s);
+        Assert.Contains("█", string.Join("", Enumerable.Range(3, 4).Select(c.Row))); // block digits
+        _ctl.Apply(Cmd.Clean, 10);
+        Assert.Equal(ViewKind.Junk, _m.View); // J / c from the Overview opens the junk list
     }
 }

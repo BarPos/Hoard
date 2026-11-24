@@ -179,4 +179,16 @@ public sealed class DeleteFlowTests : IDisposable
             Assert.Contains("Total", c.ToString());
         }
     }
+
+    [Fact]
+    public void Quit_question_warns_about_marks()
+    {
+        _ctl.Apply(Cmd.Mark, 10);
+        _ctl.Apply(Cmd.Quit, 10);
+        string screen = Render().ToString();
+        Assert.Contains("Quit Hoard?", screen);
+        Assert.Contains("Your 1 mark will be lost.", screen);
+        _ctl.Apply(Cmd.Open, 10);                      // ↵ quits
+        Assert.True(_ctl.QuitRequested);
+    }
 }

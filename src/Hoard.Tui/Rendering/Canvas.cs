@@ -116,6 +116,7 @@ public sealed class MemoryCanvas(int width, int height) : ICanvas
 
     public void Text(int x, int y, string text, Style style)
     {
+        text = Glyphs.Apply(text);
         if (y < 0 || y >= Height)
         {
             return;
@@ -143,6 +144,7 @@ public sealed class MemoryCanvas(int width, int height) : ICanvas
 
     public void Fill(int x, int y, int width, int height, Style style, char ch = ' ')
     {
+        ch = Glyphs.Apply(ch);
         for (int yy = Math.Max(0, y); yy < Math.Min(Height, y + height); yy++)
         {
             for (int xx = Math.Max(0, x); xx < Math.Min(Width, x + width); xx++)

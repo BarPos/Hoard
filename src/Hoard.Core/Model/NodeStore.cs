@@ -240,6 +240,96 @@ public sealed class NodeStore
     }
 
     /// <summary>
+    /// Turns an entry into an excluded one, as if a pattern had matched it during the scan: it no
+    /// longer counts, and what was inside goes away (plan.md §5.4, <c>X</c>).
+    /// </summary>
+    public void Exclude(int id)
+    {
+        if (id == Root || Kind(id) == NodeKind.Excluded)
+        {
+            return;
+        }
+        var inside = new Stack<int>(Children(id));
+        while (inside.Count > 0)
+        {
+            int n = inside.Pop();
+            foreach (int c in Children(n))
+            {
+                inside.Push(c);
+            }
+            Flags(n) |= NodeFlags.Deleted;
+        }
+        int files = FileCount(id), dirs = DirCount(id);
+        AddToAncestors(Parent(id), -Size(id), -Apparent(id), -files, -dirs);
+        Volatile.Write(ref ChildCount(id), 0);
+        Size(id) = 0;
+        Apparent(id) = 0;
+        Files(id) = 0;
+        Dirs(id) = 0;
+        Kind(id) = NodeKind.Excluded;
+    }
+
+    /// <summary>
+    /// Replaces what's inside folder <paramref name="dir"/> with what a fresh scan of that folder
+    /// found (<paramref name="fresh"/>, rooted at its <see cref="Root"/>), and moves the totals of
+    /// every parent by the difference (plan.md §5: rescan the selected subtree). The old entries
+    /// stay in memory but are no longer reachable. Call from one thread at a time.
+    /// </summary>
+    public void Graft(int dir, NodeStore fresh)
+    {
+        long dSize = fresh.Size(Root) - Size(dir), dApparent = fresh.Apparent(Root) - Apparent(dir);
+        int dFiles = fresh.Files(Root) - Files(dir), dDirs = fresh.Dirs(Root) - Dirs(dir);
+        // The old entries go away like deleted ones, so lists that remember them (reports, marks) drop them.
+        var old = new Stack<int>(Children(dir));
+        while (old.Count > 0)
+        {
+            int id = old.Pop();
+            foreach (int c in Children(id))
+            {
+                old.Push(c);
+            }
+            Flags(id) |= NodeFlags.Deleted;
+        }
+        NamePool.Writer writer = Names.CreateWriter();
+        var queue = new Queue<(int From, int To)>();
+        queue.Enqueue((Root, dir));
+        while (queue.Count > 0)
+        {
+            var (from, to) = queue.Dequeue();
+            var kids = fresh.Children(from).ToList();
+            int first = kids.Count > 0 ? Reserve(kids.Count) : None;
+            for (int i = 0; i < kids.Count; i++)
+            {
+                int src = kids[i], dst = first + i;
+                Parent(dst) = to;
+                FirstChild(dst) = None;
+                ChildCount(dst) = 0;
+                Size(dst) = fresh.Size(src);
+                Apparent(dst) = fresh.Apparent(src);
+                Files(dst) = fresh.Files(src);
+                Dirs(dst) = fresh.Dirs(src);
+                MTime(dst) = fresh.MTime(src);
+                ATime(dst) = fresh.ATime(src);
+                Kind(dst) = fresh.Kind(src);
+                Flags(dst) = fresh.Flags(src) & ~NodeFlags.Pending;
+                SetName(dst, writer, fresh.Name(src));
+                if (fresh.Kind(src) == NodeKind.Directory)
+                {
+                    queue.Enqueue((src, dst));
+                }
+            }
+            // Count to zero, then the new range, then the new count: a reader on another thread
+            // never pairs the old count with the new range.
+            Volatile.Write(ref ChildCount(to), 0);
+            Volatile.Write(ref FirstChild(to), first);
+            Volatile.Write(ref ChildCount(to), kids.Count);
+        }
+        Flags(dir) = (Flags(dir) & ~(NodeFlags.Error | NodeFlags.Pending)) | (fresh.Flags(Root) & NodeFlags.Error);
+        MTime(dir) = fresh.MTime(Root);
+        AddToAncestors(dir, dSize, dApparent, dFiles, dDirs);
+    }
+
+    /// <summary>
     /// Call once when a scan ends. A folder's <see cref="MTime"/> becomes the newest modification
     /// time of anything inside it (a folder's own timestamp only changes when entries are added or
     /// removed, which says little about how stale its contents are). Empty folders keep their own time.

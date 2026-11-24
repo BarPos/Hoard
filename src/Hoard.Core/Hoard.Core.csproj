@@ -7,4 +7,11 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Hoard.Core.Tests" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="System.IO.Hashing" Version="10.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- The pretty HTML report: examples/pretty-report.html with the data swapped for the real scan. -->
+    <EmbeddedResource Include="Export/pretty-report.html" LogicalName="Hoard.PrettyReport.html" />
+  </ItemGroup>
 </Project>

@@ -32,10 +32,26 @@ public static partial class Screens
 
         JunkReport? report = m.Junk;
         int x = 2, inner = w - 4;
-        if (report is null)
+        if (report is null && m.Scanning)
         {
             p.Text(x, 4, $"{Spin[m.Tick % Spin.Length]} The junk report is ready when the scan finishes.", t.Muted);
             p.Text(x, 5, "Meanwhile you can browse (2) or look at the map (3).", t.Faint);
+        }
+        else if (m.JunkError is { } error)
+        {
+            p.Text(x, 4, Cells.Fit("The junk search failed: " + error, inner).TrimEnd(), t.Bad);
+        }
+        else if (report is null)
+        {
+            // Searching in the background: show how far along it is instead of freezing.
+            long total = Math.Max(1, s.Dirs(NodeStore.Root));
+            long done = Math.Min(total, m.JunkWork.FoldersChecked);
+            double f = (double)done / total;
+            p.Text(x, 4, $"{Spin[m.Tick % Spin.Length]} Looking for junk…", t.Accent, attr: TextAttr.Bold);
+            int barW = Math.Max(10, Math.Min(60, inner - 14));
+            p.Bar(x, 6, barW, f);
+            p.Text(x + barW + 2, 6, $"{(int)(f * 100),3}%", t.Text);
+            p.Text(x, 7, Cells.Fit($"{Units.Count(done)} of {Units.Count(total)} folders checked · you can keep using the other views", inner).TrimEnd(), t.Muted);
         }
         else if (report.Categories.All(cat => cat.Count(s) == 0))
         {

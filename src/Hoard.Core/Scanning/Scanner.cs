@@ -102,7 +102,45 @@ public sealed class Scanner
 
     public ScanProgress Progress { get; } = new();
 
-    private readonly record struct Work(int Node, string FullPath, string RelPath);
+    /// <summary>A folder to read, with the <c>.hoardignore</c> rules from the folders above it.</summary>
+    private readonly record struct Work(int Node, string FullPath, string RelPath, LocalIgnore? Ignore = null);
+
+    /// <summary>
+    /// Patterns from a <c>.hoardignore</c> file (plan.md §5.4), relative to the folder it's in,
+    /// chained to the ones further up.
+    /// </summary>
+    private sealed record LocalIgnore(string BaseRel, GlobMatcher Matcher, LocalIgnore? Outer)
+    {
+        public bool IsExcluded(string rel, string full, bool isDir)
+        {
+            for (LocalIgnore? l = this; l is not null; l = l.Outer)
+            {
+                string local = l.BaseRel.Length == 0 ? rel : rel.Length > l.BaseRel.Length ? rel[(l.BaseRel.Length + 1)..] : "";
+                if (local.Length > 0 && l.Matcher.IsExcluded(local, full, isDir))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
+    /// <summary>The name of the per-folder ignore file.</summary>
+    public const string IgnoreFile = ".hoardignore";
+
+    private static LocalIgnore? ReadIgnore(string folder, string rel, LocalIgnore? outer)
+    {
+        try
+        {
+            var lines = File.ReadAllLines(Path.Combine(folder, IgnoreFile))
+                .Select(l => l.Trim()).Where(l => l.Length > 0 && !l.StartsWith('#')).ToList();
+            return lines.Count == 0 ? outer : new LocalIgnore(rel, new GlobMatcher(lines), outer);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            return outer;
+        }
+    }
 
     private sealed class Run
     {
@@ -327,6 +365,7 @@ public sealed class Scanner
             return;
         }
 
+        LocalIgnore? ignore = names.Contains(IgnoreFile) ? ReadIgnore(w.FullPath, w.RelPath, w.Ignore) : w.Ignore;
         int n = names.Count;
         if (n == 0)
         {
@@ -367,7 +406,7 @@ public sealed class Scanner
             store.ATime(id) = NodeStore.ToUnixTime(info.ATime);
             bool isDir = info.Type == EntryType.Directory;
 
-            if (!_excludes.IsEmpty && _excludes.IsExcluded(rel, full, isDir))
+            if ((!_excludes.IsEmpty && _excludes.IsExcluded(rel, full, isDir)) || (ignore?.IsExcluded(rel, full, isDir) ?? false))
             {
                 store.Kind(id) = NodeKind.Excluded;
                 continue;
@@ -421,7 +460,7 @@ public sealed class Scanner
                 {
                     store.Flags(id) |= NodeFlags.Pending;
                     store.Incomplete(id) = 1;
-                    queue.Add(new Work(id, full, rel));
+                    queue.Add(new Work(id, full, rel, ignore));
                 }
             }
             else
