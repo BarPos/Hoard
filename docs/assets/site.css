@@ -1,0 +1,51 @@
+/* Hoard's docs: the app's own colours (the "hoard" theme) on a dark page. */
+:root {
+  --bg: #121212; --panel: #1a1816; --text: #d0d0d0; --muted: #8a8a8a; --faint: #4e4e4e; --border: #af8700;
+  --acc: #ffaf00; --acc2: #ff8700; --ok: #87d787; --warn: #ffd75f; --bad: #ff5f5f; --info: #5fd7ff;
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body { margin: 0; color: var(--text); font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+a { color: var(--acc); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.top { position: sticky; top: 0; z-index: 2; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 22px;
+  padding: 10px 24px; background: #5f0000; border-bottom: 1px solid #000; font-family: var(--mono); }
+.logo { font-weight: 700; color: var(--acc); white-space: nowrap; }
+.logo:hover { text-decoration: none; }
+.grad { background: linear-gradient(90deg, #ffff00, #ffd700, #ffaf00, #ff8700, #ff5f00); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.top nav { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 14px; }
+.top nav a { color: #bcbcbc; padding: 1px 6px; border-radius: 3px; }
+.top nav a.on { background: var(--acc); color: #000; font-weight: 700; text-decoration: none; }
+
+main { max-width: 1040px; margin: 0 auto; padding: 28px 24px 40px; }
+h1, h2, h3 { line-height: 1.25; color: #eee; }
+h1 { font-size: 2.1em; margin: .2em 0 .4em; }
+h2 { margin-top: 2em; padding-bottom: .25em; border-bottom: 1px solid #333; color: var(--acc); font-family: var(--mono); font-size: 1.25em; }
+h3 { margin-top: 1.6em; color: var(--acc2); font-family: var(--mono); font-size: 1.05em; }
+p, li { max-width: 78ch; }
+img { max-width: 100%; height: auto; display: block; margin: 18px auto; }
+code, kbd, pre { font-family: var(--mono); font-size: .9em; }
+code { background: #262626; color: #ffd787; padding: .1em .35em; border-radius: 4px; }
+pre { background: var(--panel); border: 1px solid #333; border-left: 3px solid var(--acc); padding: 12px 16px; overflow-x: auto; border-radius: 6px; }
+pre code { background: none; color: var(--text); padding: 0; }
+table { border-collapse: collapse; margin: 14px 0; width: 100%; }
+th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid #2c2c2c; vertical-align: top; }
+th { color: var(--muted); font-weight: 600; font-family: var(--mono); font-size: .85em; text-transform: uppercase; }
+td code { white-space: nowrap; }
+blockquote { margin: 16px 0; padding: 8px 16px; border-left: 3px solid var(--info); background: #161b1e; color: #c6d0d4; }
+
+.hero { text-align: center; margin: 8px 0 26px; }
+.hero .tag { font-size: 1.3em; color: #eee; margin: 0; }
+.hero .sub { color: var(--muted); margin: 4px auto 18px; }
+.install { display: inline-block; text-align: left; margin: 6px auto 0; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px 22px; margin: 18px 0; }
+.card { background: var(--panel); border: 1px solid #333; border-radius: 8px; padding: 6px 16px 14px; }
+.card h3 { margin-top: .8em; }
+.card img { margin: 8px 0 4px; }
+.badge { display: inline-block; padding: 0 6px; border-radius: 3px; font: 700 .78em var(--mono); color: #000; }
+.safe { background: var(--ok); } .review { background: var(--warn); } .keep { background: var(--faint); color: #ddd; }
+
+footer { max-width: 1040px; margin: 0 auto; padding: 20px 24px 40px; border-top: 1px solid #2a2a2a; color: var(--muted); font-size: 14px; }
+@media (max-width: 640px) { main { padding: 18px 14px; } .top { padding: 8px 14px; } }

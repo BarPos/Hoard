@@ -1,0 +1,30 @@
+title: Hoard
+description: What's hoarding your disk? A colourful, very fast disk-space explorer for the terminal.
+baseurl: /Hoard
+url: https://barpos.github.io
+markdown: kramdown
+kramdown:
+  input: GFM
+  hard_wrap: false
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default
+nav:
+  - title: Home
+    url: /
+  - title: Install
+    url: /install.html
+  - title: Tour
+    url: /tour.html
+  - title: Doing things
+    url: /actions.html
+  - title: Keys
+    url: /keys.html
+  - title: Command line
+    url: /cli.html
+  - title: Settings & files
+    url: /configuration.html
+  - title: How it works
+    url: /how-it-works.html
