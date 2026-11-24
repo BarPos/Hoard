@@ -203,7 +203,7 @@ public static partial class Screens
                         cx = p.Text(cx + 1, y, Cells.Fit(g.Where, WhereW - 2), t.Faint, bg) + 1;
                     }
                     var (text, badgeBg) = Badge(t, g.Safety);
-                    p.Text(cx, y, text, Rgb.Hex(0x000000), badgeBg, TextAttr.Bold);
+                    p.Text(cx, y, text, Theme.On(badgeBg), badgeBg, TextAttr.Bold);
                     break;
                 }
                 case EmptyRowKind.ZeroFile:

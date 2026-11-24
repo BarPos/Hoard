@@ -12,11 +12,11 @@
 <rect x="34" y="64" width="294.4" height="18.4" fill="#5f0000" class="b"/>
 <rect x="328" y="64" width="67.6" height="18.4" fill="#ffaf00" class="b"/>
 <rect x="395.2" y="64" width="630.4" height="18.4" fill="#5f0000" class="b"/>
-<rect x="42.4" y="136" width="504.4" height="18.4" fill="#875f00" class="b"/>
+<rect x="42.4" y="136" width="504.4" height="18.4" fill="#6b4800" class="b"/>
 <rect x="546.4" y="136" width="101.2" height="18.4" fill="#303030" class="b"/>
-<rect x="647.2" y="136" width="17.2" height="18.4" fill="#875f00" class="b"/>
+<rect x="647.2" y="136" width="17.2" height="18.4" fill="#6b4800" class="b"/>
 <rect x="664" y="136" width="67.6" height="18.4" fill="#ffd75f" class="b"/>
-<rect x="731.2" y="136" width="286" height="18.4" fill="#875f00" class="b"/>
+<rect x="731.2" y="136" width="286" height="18.4" fill="#6b4800" class="b"/>
 <rect x="546.4" y="172" width="101.2" height="18.4" fill="#303030" class="b"/>
 <rect x="664" y="172" width="67.6" height="18.4" fill="#87d787" class="b"/>
 <rect x="546.4" y="190" width="101.2" height="18.4" fill="#303030" class="b"/>
@@ -57,7 +57,7 @@
 <text x="412" y="77" fill="#4e4e4e" textLength="8.4" lengthAdjust="spacingAndGlyphs">8</text>
 <text x="445.6" y="77" fill="#4e4e4e" textLength="8.4" lengthAdjust="spacingAndGlyphs">9</text>
 <text x="479.2" y="77" fill="#4e4e4e" textLength="8.4" lengthAdjust="spacingAndGlyphs">0</text>
-<text x="857.2" y="77" fill="#d0d0d0" textLength="159.6" lengthAdjust="spacingAndGlyphs">6 998 files · 0.9 s</text>
+<text x="857.2" y="77" fill="#d0d0d0" textLength="159.6" lengthAdjust="spacingAndGlyphs">6 998 files · 0.8 s</text>
 <text x="42.4" y="95" fill="#ffaf00" textLength="8.4" lengthAdjust="spacingAndGlyphs">⌂</text>
 <text x="59.2" y="95" fill="#4e4e4e" textLength="8.4" lengthAdjust="spacingAndGlyphs">▸</text>
 <text x="76" y="95" fill="#ffaf00" textLength="8.4" lengthAdjust="spacingAndGlyphs" font-weight="700">~</text>

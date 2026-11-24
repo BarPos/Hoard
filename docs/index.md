@@ -78,6 +78,6 @@ It works from scripts too: reports and checks on the command line, and exports t
 - **Discoverable.** The footer always lists the keys that matter in the current view. `?` shows every key, and `:` finds any action by name.
 - **Never stuck.** Every analysis runs in the background with a progress bar, so the screen never freezes. `esc` always backs out one level.
 - **Forgiving.** Deleting goes to the Trash, `u` undoes it, and nothing destructive is a single key press.
-- **Yours.** Pick from four themes, SI or 1024-based units, and a plain-ASCII mode for limited terminals. It's mouse friendly too. Settings are saved in `~/.config/hoard/config.toml`.
+- **Yours.** Pick from thirteen themes (two of them light), SI or 1024-based units, and a plain-ASCII mode for limited terminals. It's mouse friendly too. Settings are saved in `~/.config/hoard/config.toml`.
 
 Next: [install it](install.html), then take the [tour](tour.html).

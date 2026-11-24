@@ -13,9 +13,9 @@
 <rect x="361.6" y="64" width="92.8" height="18.4" fill="#ffaf00" class="b"/>
 <rect x="454" y="64" width="571.6" height="18.4" fill="#5f0000" class="b"/>
 <rect x="269.2" y="154" width="101.2" height="18.4" fill="#303030" class="b"/>
-<rect x="42.4" y="172" width="227.2" height="18.4" fill="#875f00" class="b"/>
+<rect x="42.4" y="172" width="227.2" height="18.4" fill="#6b4800" class="b"/>
 <rect x="269.2" y="172" width="101.2" height="18.4" fill="#303030" class="b"/>
-<rect x="370" y="172" width="647.2" height="18.4" fill="#875f00" class="b"/>
+<rect x="370" y="172" width="647.2" height="18.4" fill="#6b4800" class="b"/>
 <rect x="269.2" y="190" width="101.2" height="18.4" fill="#303030" class="b"/>
 <rect x="269.2" y="208" width="101.2" height="18.4" fill="#303030" class="b"/>
 <rect x="269.2" y="226" width="101.2" height="18.4" fill="#303030" class="b"/>
@@ -52,7 +52,7 @@
 <text x="386.8" y="77" fill="#000000" textLength="58.8" lengthAdjust="spacingAndGlyphs" font-weight="700">Big+Old</text>
 <text x="470.8" y="77" fill="#4e4e4e" textLength="8.4" lengthAdjust="spacingAndGlyphs">9</text>
 <text x="504.4" y="77" fill="#4e4e4e" textLength="8.4" lengthAdjust="spacingAndGlyphs">0</text>
-<text x="857.2" y="77" fill="#d0d0d0" textLength="159.6" lengthAdjust="spacingAndGlyphs">6 998 files · 0.9 s</text>
+<text x="857.2" y="77" fill="#d0d0d0" textLength="159.6" lengthAdjust="spacingAndGlyphs">6 998 files · 0.8 s</text>
 <text x="42.4" y="95" fill="#ffaf00" textLength="8.4" lengthAdjust="spacingAndGlyphs">⌂</text>
 <text x="59.2" y="95" fill="#4e4e4e" textLength="8.4" lengthAdjust="spacingAndGlyphs">▸</text>
 <text x="76" y="95" fill="#ffaf00" textLength="8.4" lengthAdjust="spacingAndGlyphs" font-weight="700">~</text>

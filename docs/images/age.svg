@@ -75,7 +75,7 @@
 <text x="403.6" y="77" fill="#4e4e4e" textLength="8.4" lengthAdjust="spacingAndGlyphs">8</text>
 <text x="437.2" y="77" fill="#4e4e4e" textLength="8.4" lengthAdjust="spacingAndGlyphs">9</text>
 <text x="470.8" y="77" fill="#4e4e4e" textLength="8.4" lengthAdjust="spacingAndGlyphs">0</text>
-<text x="857.2" y="77" fill="#d0d0d0" textLength="159.6" lengthAdjust="spacingAndGlyphs">6 998 files · 0.9 s</text>
+<text x="857.2" y="77" fill="#d0d0d0" textLength="159.6" lengthAdjust="spacingAndGlyphs">6 998 files · 0.8 s</text>
 <text x="42.4" y="95" fill="#ffaf00" textLength="8.4" lengthAdjust="spacingAndGlyphs">⌂</text>
 <text x="59.2" y="95" fill="#4e4e4e" textLength="8.4" lengthAdjust="spacingAndGlyphs">▸</text>
 <text x="76" y="95" fill="#ffaf00" textLength="8.4" lengthAdjust="spacingAndGlyphs" font-weight="700">~</text>
@@ -206,7 +206,7 @@
 <text x="596.8" y="239" fill="#4e4e4e" textLength="8.4" lengthAdjust="spacingAndGlyphs">·</text>
 <text x="622" y="239" fill="#000000" textLength="42" lengthAdjust="spacingAndGlyphs">40.2G</text>
 <text x="714.4" y="239" fill="#4e4e4e" textLength="8.4" lengthAdjust="spacingAndGlyphs">·</text>
-<text x="748" y="239" fill="#000000" textLength="33.6" lengthAdjust="spacingAndGlyphs">1.8G</text>
+<text x="748" y="239" fill="#ffffff" textLength="33.6" lengthAdjust="spacingAndGlyphs">1.8G</text>
 <text x="832" y="239" fill="#000000" textLength="8.4" lengthAdjust="spacingAndGlyphs" font-weight="700">·</text>
 <rect x="857.2" y="226" width="4.2" height="18.4" fill="#87d787" class="b"/>
 <text x="974.8" y="239" fill="#808080" textLength="33.6" lengthAdjust="spacingAndGlyphs">4.3%</text>
@@ -222,8 +222,8 @@
 <text x="596.8" y="275" fill="#4e4e4e" textLength="8.4" lengthAdjust="spacingAndGlyphs">·</text>
 <text x="655.6" y="275" fill="#4e4e4e" textLength="8.4" lengthAdjust="spacingAndGlyphs">·</text>
 <text x="714.4" y="275" fill="#4e4e4e" textLength="8.4" lengthAdjust="spacingAndGlyphs">·</text>
-<text x="748" y="275" fill="#000000" textLength="33.6" lengthAdjust="spacingAndGlyphs">2.5G</text>
-<text x="798.4" y="275" fill="#000000" textLength="42" lengthAdjust="spacingAndGlyphs">12.6G</text>
+<text x="748" y="275" fill="#ffffff" textLength="33.6" lengthAdjust="spacingAndGlyphs">2.5G</text>
+<text x="798.4" y="275" fill="#ffffff" textLength="42" lengthAdjust="spacingAndGlyphs">12.6G</text>
 <rect x="857.2" y="262" width="8.8" height="18.4" fill="#ff5f5f" class="b"/>
 <rect x="865.6" y="262" width="8.8" height="18.4" fill="#ff5f5f" class="b"/>
 <rect x="874" y="262" width="8.8" height="18.4" fill="#ff5f5f" class="b"/>
@@ -248,9 +248,9 @@
 <text x="538" y="311" fill="#4e4e4e" textLength="8.4" lengthAdjust="spacingAndGlyphs">·</text>
 <text x="596.8" y="311" fill="#4e4e4e" textLength="8.4" lengthAdjust="spacingAndGlyphs">·</text>
 <text x="655.6" y="311" fill="#4e4e4e" textLength="8.4" lengthAdjust="spacingAndGlyphs">·</text>
-<text x="689.2" y="311" fill="#000000" textLength="33.6" lengthAdjust="spacingAndGlyphs">1.8G</text>
+<text x="689.2" y="311" fill="#ffffff" textLength="33.6" lengthAdjust="spacingAndGlyphs">1.8G</text>
 <text x="773.2" y="311" fill="#4e4e4e" textLength="8.4" lengthAdjust="spacingAndGlyphs">·</text>
-<text x="806.8" y="311" fill="#000000" textLength="33.6" lengthAdjust="spacingAndGlyphs">5.9G</text>
+<text x="806.8" y="311" fill="#ffffff" textLength="33.6" lengthAdjust="spacingAndGlyphs">5.9G</text>
 <rect x="857.2" y="298" width="8.8" height="18.4" fill="#ff5f5f" class="b"/>
 <rect x="865.6" y="298" width="8.8" height="18.4" fill="#ff5f5f" class="b"/>
 <rect x="874" y="298" width="8.8" height="18.4" fill="#ff5f5f" class="b"/>
@@ -288,9 +288,9 @@
 <text x="512.8" y="383" fill="#000000" textLength="33.6" lengthAdjust="spacingAndGlyphs">900M</text>
 <text x="596.8" y="383" fill="#4e4e4e" textLength="8.4" lengthAdjust="spacingAndGlyphs">·</text>
 <text x="655.6" y="383" fill="#4e4e4e" textLength="8.4" lengthAdjust="spacingAndGlyphs">·</text>
-<text x="689.2" y="383" fill="#000000" textLength="33.6" lengthAdjust="spacingAndGlyphs">1.8G</text>
+<text x="689.2" y="383" fill="#ffffff" textLength="33.6" lengthAdjust="spacingAndGlyphs">1.8G</text>
 <text x="773.2" y="383" fill="#4e4e4e" textLength="8.4" lengthAdjust="spacingAndGlyphs">·</text>
-<text x="806.8" y="383" fill="#000000" textLength="33.6" lengthAdjust="spacingAndGlyphs">4.1G</text>
+<text x="806.8" y="383" fill="#ffffff" textLength="33.6" lengthAdjust="spacingAndGlyphs">4.1G</text>
 <rect x="857.2" y="370" width="8.8" height="18.4" fill="#ff5f5f" class="b"/>
 <rect x="865.6" y="370" width="8.8" height="18.4" fill="#ff5f5f" class="b"/>
 <rect x="874" y="370" width="8.8" height="18.4" fill="#ff5f5f" class="b"/>

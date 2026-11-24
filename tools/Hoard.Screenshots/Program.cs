@@ -91,9 +91,10 @@ try
     Console.WriteLine("Rendering to " + outDir);
     m.View = ViewKind.Overview;
     Shot("overview");
-    Shot("theme-neon", theme: Theme.Neon);
-    Shot("theme-frost", theme: Theme.Frost);
-    Shot("theme-mono", theme: Theme.Mono);
+    foreach (Theme theme in Theme.All.Where(t => t != Theme.Hoard))
+    {
+        Shot("theme-" + theme.Name, theme: theme);
+    }
 
     m.View = ViewKind.Browse;
     m.Enter(NodeStore.Root);

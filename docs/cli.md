@@ -31,7 +31,7 @@ hoard ~ --json > scan.json  # the same, as JSON
 | `-x`, `--exclude PATTERN` | skip what matches (repeatable; [pattern syntax](actions.html#leave-things-out)) |
 | `--threads N` | scanner threads (0 = automatic) |
 | `--cross-fs` | scan into other disks mounted inside the folder |
-| `--theme NAME` | `hoard`, `neon`, `frost` or `mono`, for this run |
+| `--theme NAME` | a theme for this run: `hoard`, `neon`, `frost`, `mono`, `ember`, `forest`, `ocean`, `sunset`, `lilac`, `amber`, `phosphor`, `paper` or `daylight` |
 | `--animate` · `--no-animate` | show or skip the splash |
 | `--no-color` | no colours (`NO_COLOR` works too) |
 | `--stats` | scanner statistics on stderr |

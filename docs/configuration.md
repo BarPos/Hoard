@@ -10,7 +10,7 @@ title: Settings & files
 
 | Setting | Choices |
 |---|---|
-| **Theme** | `hoard`, `neon`, `frost`, `mono`. All four are previewed beside the list. |
+| **Theme** | thirteen themes, all previewed beside the list. `t` anywhere cycles through them. |
 | **Units** | SI: GB, powers of 1000, matching Finder · IEC: GiB, powers of 1024, like `du -h` |
 | **Glyphs** | Unicode, or plain ASCII for terminals and fonts that show boxes instead of lines and bars |
 | **Animations** | the splash at start |
@@ -24,19 +24,33 @@ title: Settings & files
 | **Big & old** | the default minimum size, minimum age, and modified or opened |
 | **Exclude patterns** | see [Leave things out](actions.html#leave-things-out) |
 
-The theme gallery:
+## Themes
+
+Every theme meets the same contrast targets (checked by the tests): body text at least 4.5:1 against its background, and muted text, accents and status colours at least 3:1. Labels on coloured badges and tabs get black or white, whichever reads better.
 
 | | |
 |---|---|
-| ![The neon theme](images/theme-neon.svg) | ![The frost theme](images/theme-frost.svg) |
-| ![The mono theme](images/theme-mono.svg) | ![The hoard theme](images/overview.svg) |
+| ![hoard](images/overview.svg) | ![neon](images/theme-neon.svg) |
+| **hoard:** gold and fire on charcoal (the default) | **neon:** electric cyan to magenta |
+| ![frost](images/theme-frost.svg) | ![mono](images/theme-mono.svg) |
+| **frost:** cool ice blues | **mono:** greys only, for minimal or limited terminals |
+| ![ember](images/theme-ember.svg) | ![forest](images/theme-forest.svg) |
+| **ember:** glowing coals | **forest:** moss, leaves and bark |
+| ![ocean](images/theme-ocean.svg) | ![sunset](images/theme-sunset.svg) |
+| **ocean:** deep water, from shallows to depths | **sunset:** peach, pink and violet |
+| ![lilac](images/theme-lilac.svg) | ![amber](images/theme-amber.svg) |
+| **lilac:** soft pastels on dusk | **amber:** a vintage amber monitor |
+| ![phosphor](images/theme-phosphor.svg) | ![paper](images/theme-paper.svg) |
+| **phosphor:** green phosphor, like an old terminal | **paper:** light: ink on warm paper |
+| ![daylight](images/theme-daylight.svg) | |
+| **daylight:** light: crisp blue on white | |
 
 ## The settings file
 
 Settings live in `~/.config/hoard/config.toml`, or `$XDG_CONFIG_HOME/hoard/config.toml` if that's set. You can edit it by hand: if a line is wrong, Hoard says so when it starts and loads the rest.
 
 ```toml
-theme = "hoard"            # hoard, neon, frost or mono
+theme = "hoard"            # any theme name from the table above
 mouse = true
 units = "si"               # si: GB (1000) · iec: GiB (1024)
 animations = true

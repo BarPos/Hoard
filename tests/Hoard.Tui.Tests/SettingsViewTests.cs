@@ -39,10 +39,12 @@ public sealed class SettingsViewTests(Fixture f) : IClassFixture<Fixture>, IDisp
         Assert.Contains("Settings", c.Row(2));
         Assert.Contains("Themes", c.Row(2));
         Assert.Contains("saved to", c.Row(1));
-        foreach (Theme t in Theme.All)
-        {
-            Assert.Contains(t.Name, s);
-        }
+        Assert.Contains("hoard", s);   // the theme in use…
+        Assert.Contains("neon", s);    // …and its neighbours
+        Assert.Contains("↓", s);       // more below: the list scrolls
+        m.Theme = Theme.All[^1];
+        string last = Render(m).ToString();
+        Assert.Contains(Theme.All[^1].Name, last); // scrolled to keep the one in use in view
         Assert.Contains("in use", s);
         Assert.Contains("◂ hoard ▸", s);
         Assert.Contains("Appearance", s);

@@ -133,10 +133,10 @@ public static partial class Screens
         {
             // A parent: a header bar, then its children laid out inside.
             Rgb head = selected ? t.Accent : colour.Mix(Black, 0.45);
-            Rgb fg = selected ? Black : White;
+            Rgb fg = Theme.On(head);
             c.Fill(r.X, r.Y, w, 1, new Style(fg, head));
             c.Text(r.X, r.Y, Cells.Fit(" " + mark + name + " · " + Units.Size(b.Size), w).TrimEnd(), new Style(fg, head, TextAttr.Bold));
-            c.Fill(r.X, r.Y + 1, w, h - 1, new Style(t.Text, colour.Mix(Black, 0.7)));
+            c.Fill(r.X, r.Y + 1, w, h - 1, new Style(t.Text, colour.Mix(t.Bg, 0.7)));
             for (int i = 0; i < b.Children.Count; i++)
             {
                 double f = 0.10 + 0.08 * (i % 3);

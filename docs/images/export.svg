@@ -12,12 +12,12 @@
 <rect x="34" y="64" width="126.4" height="18.4" fill="#5f0000" class="b"/>
 <rect x="160" y="64" width="84.4" height="18.4" fill="#ffaf00" class="b"/>
 <rect x="244" y="64" width="781.6" height="18.4" fill="#5f0000" class="b"/>
-<rect x="42.4" y="136" width="344.8" height="18.4" fill="#875f00" class="b"/>
+<rect x="42.4" y="136" width="344.8" height="18.4" fill="#6b4800" class="b"/>
 <rect x="386.8" y="136" width="210.4" height="18.4" fill="#303030" class="b"/>
-<rect x="596.8" y="136" width="84.4" height="18.4" fill="#875f00" class="b"/>
+<rect x="596.8" y="136" width="84.4" height="18.4" fill="#6b4800" class="b"/>
 <rect x="67.6" y="172" width="924.4" height="18.4" fill="#161412" class="b"/>
 <rect x="67.6" y="190" width="8.8" height="18.4" fill="#161412" class="b"/>
-<rect x="76" y="190" width="403.6" height="18.4" fill="#875f00" class="b"/>
+<rect x="76" y="190" width="403.6" height="18.4" fill="#6b4800" class="b"/>
 <rect x="479.2" y="190" width="512.8" height="18.4" fill="#161412" class="b"/>
 <rect x="67.6" y="208" width="924.4" height="18.4" fill="#161412" class="b"/>
 <rect x="67.6" y="226" width="924.4" height="18.4" fill="#161412" class="b"/>
@@ -60,7 +60,7 @@
 <text x="428.8" y="77" fill="#4e4e4e" textLength="8.4" lengthAdjust="spacingAndGlyphs">8</text>
 <text x="462.4" y="77" fill="#4e4e4e" textLength="8.4" lengthAdjust="spacingAndGlyphs">9</text>
 <text x="496" y="77" fill="#4e4e4e" textLength="8.4" lengthAdjust="spacingAndGlyphs">0</text>
-<text x="857.2" y="77" fill="#d0d0d0" textLength="159.6" lengthAdjust="spacingAndGlyphs">6 998 files · 0.9 s</text>
+<text x="857.2" y="77" fill="#d0d0d0" textLength="159.6" lengthAdjust="spacingAndGlyphs">6 998 files · 0.8 s</text>
 <text x="42.4" y="95" fill="#ffaf00" textLength="8.4" lengthAdjust="spacingAndGlyphs">⌂</text>
 <text x="59.2" y="95" fill="#4e4e4e" textLength="8.4" lengthAdjust="spacingAndGlyphs">▸</text>
 <text x="76" y="95" fill="#d0d0d0" textLength="8.4" lengthAdjust="spacingAndGlyphs">~</text>

@@ -158,11 +158,11 @@ public static partial class Screens
                 double k = bytes > 0 ? Math.Log(1 + bytes) / logMax : 0;
                 Rgb colour = t.GradientAt((double)b / AgeBuckets.Count);
                 Rgb bg = bytes > 0 ? t.Track.Mix(colour, 0.2 + 0.8 * k) : t.Bg;
-                Rgb fg = bytes > 0 && k > 0.55 ? Rgb.Hex(0x000000) : bytes > 0 ? t.Text : t.Faint;
+                Rgb fg = bytes > 0 ? Theme.On(bg) : t.Faint;
                 bool sel = selRow && m.AgeColumn == b;
                 if (sel)
                 {
-                    (fg, bg) = (Rgb.Hex(0x000000), t.Accent);
+                    (fg, bg) = (Theme.On(t.Accent), t.Accent);
                 }
                 int bx = cellsX + b * cellW;
                 p.Text(bx, y, Cells.Fit(ShortSize(bytes, cellW - 2), cellW - 1, padLeft: true), fg, bg, sel ? TextAttr.Bold : TextAttr.None);

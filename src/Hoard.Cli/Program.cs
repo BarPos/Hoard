@@ -20,7 +20,7 @@ var exclude = new Option<string[]>("--exclude", "-x") { Description = "gitignore
 var threads = new Option<int>("--threads") { Description = "Scanner threads (0 = automatic)" };
 var crossFs = new Option<bool>("--cross-fs") { Description = "Descend into other file systems (default: stay on one)" };
 var noColor = new Option<bool>("--no-color") { Description = "Disable colour (also honoured: NO_COLOR)" };
-var theme = new Option<string>("--theme") { Description = "Colour theme: hoard, neon, frost or mono (default: from settings)" };
+var theme = new Option<string>("--theme") { Description = $"Colour theme: {Hoard.Tui.Rendering.Theme.NameList} (default: from settings)" };
 var stats = new Option<bool>("--stats") { Description = "Print scanner statistics (nodes, memory, throughput) to stderr" };
 var export = new Option<string>("--export") { Description = "Write a report instead of a summary: json, csv, html, pretty-html, markdown or ncdu" };
 var output = new Option<string>("--output", "-o") { Description = "File for --export (default: standard output)" };
@@ -107,7 +107,7 @@ root.SetAction(parse =>
         string? flagTheme = parse.GetValue(theme);
         if (flagTheme is not null && !Hoard.Tui.Rendering.Theme.All.Any(t => t.Name == flagTheme))
         {
-            Console.Error.WriteLine($"hoard: unknown theme '{flagTheme}' (try hoard, neon, frost or mono)");
+            Console.Error.WriteLine($"hoard: unknown theme '{flagTheme}' (try {Hoard.Tui.Rendering.Theme.NameList})");
             return ExitUsage;
         }
         string? note = settingsProblems.Count > 0 ? $"settings: {settingsProblems[0]}" + (settingsProblems.Count > 1 ? $" (+{settingsProblems.Count - 1} more)" : "") : null;

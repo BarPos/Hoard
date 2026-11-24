@@ -68,7 +68,7 @@ public static partial class Screens
         y++;
         bool button = e.Field == 6;
         string label = e.Writing is { IsCompleted: false } ? $" {Spin[m.Tick % Spin.Length]} writing… " : " ↵ Export ";
-        p.Text(x, y, label, Rgb.Hex(0x000000), button ? t.Accent : t.Accent2, TextAttr.Bold);
+        p.Text(x, y, label, Theme.On(button ? t.Accent : t.Accent2), button ? t.Accent : t.Accent2, TextAttr.Bold);
         p.Text(x + Cells.Width(label) + 2, y, Cells.Fit("y copies the path", fw - Cells.Width(label) - 2).TrimEnd(), t.Faint, Bg);
         y += 2;
         if (e.Error is { } err)

@@ -18,7 +18,7 @@ See where your space went, find what's safe to clear out, and clean up without f
 - **Fast.** A parallel scanner reads a whole Mac in seconds (≈ 300 000 entries a second here), and you can look around while it's still counting.
 - **Answers, not just numbers.** One screen says how much you could free and where: known junk, big files nobody has touched for years, and duplicates.
 - **Safe.** Deleting goes to the Trash, and `u` undoes it. Hoard always asks first, refuses system paths, and leaves installed software alone. Before it deletes a duplicate, it compares the bytes.
-- **Pleasant.** Gradients, a treemap, heatmaps and four themes. Mouse support. Every screen adapts to the window size, and nothing ever freezes the UI.
+- **Pleasant.** Gradients, a treemap, heatmaps and thirteen themes, including two light ones. Mouse support. Every screen adapts to the window size, and nothing ever freezes the UI.
 - **Honest about sizes.** It shows the space actually used on disk, counts hard links once, and knows about APFS clones and macOS firmlinks.
 
 ## Install

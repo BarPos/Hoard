@@ -72,10 +72,10 @@ public static partial class Screens
         {
             int x0 = x + 1;
             bool on = view == active;
-            x = p.Text(x0, 0, " " + key + " ", on ? Rgb.Hex(0x000000) : t.Faint, on ? t.Accent : t.Bar);
+            x = p.Text(x0, 0, " " + key + " ", on ? Theme.On(t.Accent) : t.Faint, on ? t.Accent : t.Bar);
             if (fullLabels || on)
             {
-                x = p.Text(x, 0, label + " ", on ? Rgb.Hex(0x000000) : t.Muted, on ? t.Accent : t.Bar, on ? TextAttr.Bold : TextAttr.None);
+                x = p.Text(x, 0, label + " ", on ? Theme.On(t.Accent) : t.Muted, on ? t.Accent : t.Bar, on ? TextAttr.Bold : TextAttr.None);
             }
             hits?.Tabs.Add((x0, x, view));
         }
@@ -351,7 +351,7 @@ public static partial class Screens
             c.Text(x0 + 3, y++, Cells.Fit(n, w - 6).TrimEnd(), new Style(t.Warn, t.Panel));
         }
         int bx = x0 + 3;
-        c.Text(bx, y + 1, " y Quit ", new Style(Rgb.Hex(0x000000), t.Accent, TextAttr.Bold));
+        c.Text(bx, y + 1, " y Quit ", new Style(Theme.On(t.Accent), t.Accent, TextAttr.Bold));
         c.Text(bx + 10, y + 1, " n Stay ", new Style(t.Text, t.Panel, TextAttr.Bold));
         c.Text(bx + 20, y + 1, Cells.Fit("↵ quits · esc stays", Math.Max(0, w - 26)).TrimEnd(), new Style(t.Muted, t.Panel));
     }
@@ -444,7 +444,7 @@ public static partial class Screens
                 {
                     bool focus = d.Choice == i, enabled = d.IsEnabled(i);
                     string label = (focus ? "►" : " ") + labels[i];
-                    Style st = focus ? new Style(Rgb.Hex(0x000000), i == DeleteDialog.PermanentChoice ? t.Bad : t.Accent, TextAttr.Bold)
+                    Style st = focus ? new Style(Theme.On(i == DeleteDialog.PermanentChoice ? t.Bad : t.Accent), i == DeleteDialog.PermanentChoice ? t.Bad : t.Accent, TextAttr.Bold)
                         : new Style(enabled ? (i == DeleteDialog.PermanentChoice ? t.Bad : t.Text) : t.Faint, t.Panel);
                     c.Text(bx, y, label, st);
                     bx += Cells.Width(label) + 3;

@@ -176,7 +176,7 @@ public static partial class Screens
         foreach (var (rule, label) in rules)
         {
             bool on = m.DupKeep == rule;
-            cx = p.Text(cx, y, $"[{label}]", on ? Rgb.Hex(0x000000) : t.Muted, on ? t.Accent : t.Bg, on ? TextAttr.Bold : TextAttr.None) + 1;
+            cx = p.Text(cx, y, $"[{label}]", on ? Theme.On(t.Accent) : t.Muted, on ? t.Accent : t.Bg, on ? TextAttr.Bold : TextAttr.None) + 1;
         }
         int kx = p.Text(cx + 1, y, "K", t.Accent, attr: TextAttr.Bold);
         kx = p.Text(kx + 1, y, "changes · ", t.Muted);

@@ -143,7 +143,7 @@ public static class SettingsFile
         sb.AppendLine("# Hoard settings. Change them in Hoard (press ,) or edit this file.");
         sb.AppendLine("# Command-line flags (for example --theme) override these for one run.");
         sb.AppendLine();
-        sb.AppendLine($"theme = {Quote(s.Theme)}            # hoard, neon, frost or mono");
+        sb.AppendLine($"theme = {Quote(s.Theme)}            # see the Theme setting (press , in Hoard) for all of them");
         sb.AppendLine($"mouse = {B(s.Mouse)}");
         sb.AppendLine($"units = {Quote(s.Iec ? "iec" : "si")}            # si: GB (1000) · iec: GiB (1024)");
         sb.AppendLine($"animations = {B(s.Animations)}       # the splash; HOARD_ANIMATE=0 also turns it off");

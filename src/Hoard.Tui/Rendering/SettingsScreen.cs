@@ -28,7 +28,7 @@ public static partial class Screens
         if (two)
         {
             p.HLine(0, 2, lw + 1, '╭', '┬', "Settings");
-            p.HLine(lw, 2, w - lw, '┬', '╮', "Themes", "←→ on Theme picks one");
+            p.HLine(lw, 2, w - lw, '┬', '╮', "Themes", $"{Theme.All.Length} · ←→ on Theme picks one");
             p.HLine(0, h - 2, lw + 1, '╰', '┴', null, m.Toast, t.Info);
             p.HLine(lw, h - 2, w - lw, '┴', '╯');
             p.VLine(lw, 3, h - 5);
@@ -137,31 +137,37 @@ public static partial class Screens
         return hits;
     }
 
-    /// <summary>Every theme drawn in its own colours, so choosing one doesn't take guesswork.</summary>
+    /// <summary>
+    /// Every theme drawn in its own colours, so choosing one doesn't take guesswork. With more
+    /// themes than fit, the list scrolls to keep the one in use in view.
+    /// </summary>
     private static void DrawThemePreviews(Painter p, BrowserModel m, int x, int y, int width, int bottom)
     {
         ICanvas c = p.Canvas;
-        int each = Math.Max(3, Math.Min(5, (bottom - y) / Theme.All.Length));
-        for (int i = 0; i < Theme.All.Length && y + 2 < bottom; i++, y += each)
+        Theme[] all = Theme.All;
+        int avail = Math.Max(2, bottom - y);
+        int per = avail >= all.Length * 3 ? 3 : 2;
+        int visible = Math.Max(1, Math.Min(all.Length, avail / per));
+        int current = Math.Max(0, Array.IndexOf(all, m.Theme));
+        int first = Math.Clamp(current - visible / 2, 0, all.Length - visible);
+        for (int i = 0; i < visible; i++)
         {
-            Theme th = Theme.All[i];
-            bool current = th == m.Theme;
-            c.Fill(x - 1, y, width + 2, Math.Min(each - 1, bottom - y), new Style(th.Text, th.Bg));
-            int cx = p.Text(x, y, current ? "●" : "○", current ? th.Accent : th.Faint, th.Bg, TextAttr.Bold);
-            cx = p.Text(cx + 1, y, "◆ ", th.Accent, th.Bg);
+            Theme th = all[first + i];
+            int yy = y + i * per;
+            bool on = th == m.Theme;
+            c.Fill(x - 1, yy, width + 2, 2, new Style(th.Text, th.Bg));
+            int cx = p.Text(x, yy, on ? "●" : "○", on ? th.Accent : th.Faint, th.Bg, TextAttr.Bold);
+            cx = p.Text(cx + 1, yy, "◆ ", th.Accent, th.Bg);
             for (int k = 0; k < 5; k++)
             {
-                cx = p.Text(cx, y, "HOARD"[k].ToString(), th.GradientAt(k / 6.0), th.Bg, TextAttr.Bold);
+                cx = p.Text(cx, yy, "HOARD"[k].ToString(), th.GradientAt(k / 6.0), th.Bg, TextAttr.Bold);
             }
-            cx = p.Text(cx + 2, y, th.Name, th.Text, th.Bg, TextAttr.Bold);
-            if (current)
-            {
-                p.Text(cx + 2, y, "in use", th.Muted, th.Bg);
-            }
+            cx = p.Text(cx + 2, yy, th.Name, th.Text, th.Bg, TextAttr.Bold);
+            string about = on ? "in use · " + th.Description : th.Description;
+            p.Text(cx + 2, yy, Cells.Fit(about, Math.Max(0, x + width - cx - 2)).TrimEnd(), th.Muted, th.Bg);
             // A size bar and the status colours, as they appear in the app.
-            int barW = Math.Max(6, Math.Min(24, width - 26));
-            var tp = new Painter(c, th);
-            tp.Bar(x + 2, y + 1, barW, 0.7);
+            int barW = Math.Max(6, Math.Min(24, width - 30));
+            new Painter(c, th).Bar(x + 2, yy + 1, barW, 0.7);
             int sx = x + 2 + barW + 2;
             foreach (var (label, colour) in new[] { ("ok", th.Ok), ("review", th.Warn), ("old", th.Bad), ("info", th.Info) })
             {
@@ -169,17 +175,17 @@ public static partial class Screens
                 {
                     break;
                 }
-                sx = p.Text(sx, y + 1, "■", colour, th.Bg);
-                sx = p.Text(sx + 1, y + 1, label, th.Muted, th.Bg) + 2;
+                sx = p.Text(sx, yy + 1, "■", colour, th.Bg);
+                sx = p.Text(sx + 1, yy + 1, label, th.Muted, th.Bg) + 2;
             }
-            if (each >= 4 && y + 2 < bottom)
-            {
-                int gx = x + 2;
-                for (int k = 0; k < Math.Min(width - 4, 32); k++)
-                {
-                    gx = p.Text(gx, y + 2, "▀", th.GradientAt(k / 32.0), th.Bg);
-                }
-            }
+        }
+        if (first > 0)
+        {
+            p.Text(x + width - 1, y, "↑", p.Theme.Faint);
+        }
+        if (first + visible < all.Length)
+        {
+            p.Text(x + width - 1, Math.Min(bottom - 1, y + visible * per - 1), "↓", p.Theme.Faint);
         }
     }
 }

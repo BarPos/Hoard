@@ -19,15 +19,15 @@
 <rect x="798.4" y="244" width="143.2" height="18.4" fill="#303030" class="b"/>
 <rect x="193.6" y="262" width="67.6" height="18.4" fill="#303030" class="b"/>
 <rect x="260.8" y="262" width="8.8" height="18.4" fill="#161412" class="b"/>
-<rect x="269.2" y="262" width="521.2" height="18.4" fill="#875f00" class="b"/>
+<rect x="269.2" y="262" width="521.2" height="18.4" fill="#6b4800" class="b"/>
 <rect x="790" y="262" width="8.8" height="18.4" fill="#161412" class="b"/>
 <rect x="260.8" y="280" width="538" height="18.4" fill="#161412" class="b"/>
 <rect x="193.6" y="298" width="67.6" height="18.4" fill="#303030" class="b"/>
 <rect x="260.8" y="298" width="538" height="18.4" fill="#161412" class="b"/>
 <rect x="260.8" y="316" width="538" height="18.4" fill="#161412" class="b"/>
-<rect x="42.4" y="352" width="269.2" height="18.4" fill="#875f00" class="b"/>
+<rect x="42.4" y="352" width="269.2" height="18.4" fill="#6b4800" class="b"/>
 <rect x="311.2" y="352" width="202" height="18.4" fill="#303030" class="b"/>
-<rect x="512.8" y="352" width="17.2" height="18.4" fill="#875f00" class="b"/>
+<rect x="512.8" y="352" width="17.2" height="18.4" fill="#6b4800" class="b"/>
 <rect x="790" y="352" width="168.4" height="18.4" fill="#303030" class="b"/>
 <rect x="311.2" y="370" width="202" height="18.4" fill="#303030" class="b"/>
 <rect x="790" y="370" width="168.4" height="18.4" fill="#303030" class="b"/>
@@ -68,7 +68,7 @@
 <text x="445.6" y="77" fill="#4e4e4e" textLength="8.4" lengthAdjust="spacingAndGlyphs">8</text>
 <text x="479.2" y="77" fill="#4e4e4e" textLength="8.4" lengthAdjust="spacingAndGlyphs">9</text>
 <text x="512.8" y="77" fill="#4e4e4e" textLength="8.4" lengthAdjust="spacingAndGlyphs">0</text>
-<text x="857.2" y="77" fill="#d0d0d0" textLength="159.6" lengthAdjust="spacingAndGlyphs">6 998 files · 0.9 s</text>
+<text x="857.2" y="77" fill="#d0d0d0" textLength="159.6" lengthAdjust="spacingAndGlyphs">6 998 files · 0.8 s</text>
 <text x="42.4" y="95" fill="#ffaf00" textLength="8.4" lengthAdjust="spacingAndGlyphs">⌂</text>
 <text x="59.2" y="95" fill="#4e4e4e" textLength="8.4" lengthAdjust="spacingAndGlyphs">▸</text>
 <text x="76" y="95" fill="#ffaf00" textLength="8.4" lengthAdjust="spacingAndGlyphs" font-weight="700">~</text>

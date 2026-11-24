@@ -140,7 +140,7 @@ public static partial class Screens
                     cx += barW + 2;
                 }
                 bool safe = cat.Rule.Safety == Safety.Safe;
-                cx = p.Text(cx, y, safe ? " SAFE   " : " REVIEW ", Rgb.Hex(0x000000), safe ? t.Ok : t.Warn, TextAttr.Bold) + 1;
+                cx = p.Text(cx, y, safe ? " SAFE   " : " REVIEW ", Theme.On(safe ? t.Ok : t.Warn), safe ? t.Ok : t.Warn, TextAttr.Bold) + 1;
                 if (whyW > 0)
                 {
                     p.Text(cx, y, Cells.Fit(cat.Rule.Why, whyW).TrimEnd(), t.Muted, bg);
