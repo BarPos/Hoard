@@ -171,6 +171,7 @@ try
     m.Enter(Node("dev"));
     ctl.Apply(Cmd.Export, H);
     m.Export!.Path = Path.Combine(home, "Desktop", $"hoard-dev-{DateTime.Now:yyyy-MM-dd}.html");
+    ctl.WaitForExportSize();
     Shot("export");
     Reset();
     m.Enter(NodeStore.Root);

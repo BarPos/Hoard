@@ -28,6 +28,12 @@ public sealed class ExportDialog
     public string? Preview { get; set; }
     public object? PreviewKey { get; set; }
 
+    /// <summary>How big the file will be with the current options: the export written to a counter, in the background.</summary>
+    public long? Size { get; set; }
+    public Task<long>? Sizing { get; set; }
+    public object? SizeKey { get; set; }
+    public CancellationTokenSource? SizeCancel { get; set; }
+
     public string Describe(int field) => field switch
     {
         0 => Exporter.Name(Format),
@@ -48,4 +54,26 @@ public sealed class ExportDialog
             Path = System.IO.Path.ChangeExtension(Path, Exporter.Extension(Format));
         }
     }
+}
+
+/// <summary>A stream that only counts what's written to it (for the export size); stops when cancelled.</summary>
+internal sealed class CountingStream(CancellationToken cancel) : Stream
+{
+    private long _length;
+    public override bool CanRead => false;
+    public override bool CanSeek => false;
+    public override bool CanWrite => true;
+    public override long Length => _length;
+    public override long Position { get => _length; set => throw new NotSupportedException(); }
+    public override void Flush() { }
+    public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+    public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+    public override void SetLength(long value) => throw new NotSupportedException();
+    public override void Write(byte[] buffer, int offset, int count) => Write(buffer.AsSpan(offset, count));
+    public override void Write(ReadOnlySpan<byte> buffer)
+    {
+        cancel.ThrowIfCancellationRequested();
+        _length += buffer.Length;
+    }
+    public override void WriteByte(byte value) => _length++;
 }

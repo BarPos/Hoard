@@ -44,7 +44,7 @@
 <text x="445.6" y="77" fill="#4e4e4e" textLength="8.4" lengthAdjust="spacingAndGlyphs">8</text>
 <text x="479.2" y="77" fill="#4e4e4e" textLength="8.4" lengthAdjust="spacingAndGlyphs">9</text>
 <text x="512.8" y="77" fill="#4e4e4e" textLength="8.4" lengthAdjust="spacingAndGlyphs">0</text>
-<text x="748" y="77" fill="#d0d0d0" textLength="268.8" lengthAdjust="spacingAndGlyphs">⠧ scanning · 4 461 files · 5.2 s</text>
+<text x="748" y="77" fill="#d0d0d0" textLength="268.8" lengthAdjust="spacingAndGlyphs">⠧ scanning · 4 482 files · 4.7 s</text>
 <text x="42.4" y="95" fill="#ffaf00" textLength="8.4" lengthAdjust="spacingAndGlyphs">⌂</text>
 <text x="59.2" y="95" fill="#4e4e4e" textLength="8.4" lengthAdjust="spacingAndGlyphs">▸</text>
 <text x="76" y="95" fill="#ffaf00" textLength="8.4" lengthAdjust="spacingAndGlyphs" font-weight="700">~</text>
@@ -185,28 +185,27 @@
 <text x="731.2" y="221" fill="#ffaf00" textLength="8.4" lengthAdjust="spacingAndGlyphs">⠧</text>
 <path d="M1021,207.8 V226.2 " stroke="#af8700" stroke-width="1.3" fill="none"/>
 <path d="M38.2,225.8 V244.2 " stroke="#af8700" stroke-width="1.3" fill="none"/>
-<text x="67.6" y="239" fill="#d0d0d0" textLength="42" lengthAdjust="spacingAndGlyphs" font-weight="700">4 461</text>
+<text x="67.6" y="239" fill="#d0d0d0" textLength="42" lengthAdjust="spacingAndGlyphs" font-weight="700">4 484</text>
 <text x="118" y="239" fill="#808080" textLength="42" lengthAdjust="spacingAndGlyphs">files</text>
 <text x="176.8" y="239" fill="#d0d0d0" textLength="42" lengthAdjust="spacingAndGlyphs">1 588</text>
 <text x="227.2" y="239" fill="#808080" textLength="58.8" lengthAdjust="spacingAndGlyphs">folders</text>
 <text x="302.8" y="239" fill="#d0d0d0" textLength="8.4" lengthAdjust="spacingAndGlyphs">0</text>
 <text x="319.6" y="239" fill="#808080" textLength="134.4" lengthAdjust="spacingAndGlyphs">files/s  elapsed</text>
-<text x="462.4" y="239" fill="#d0d0d0" textLength="42" lengthAdjust="spacingAndGlyphs">5.2 s</text>
+<text x="462.4" y="239" fill="#d0d0d0" textLength="42" lengthAdjust="spacingAndGlyphs">4.7 s</text>
 <path d="M1021,225.8 V244.2 " stroke="#af8700" stroke-width="1.3" fill="none"/>
 <path d="M38.2,243.8 V262.2 " stroke="#af8700" stroke-width="1.3" fill="none"/>
 <text x="67.6" y="257" fill="#808080" textLength="84" lengthAdjust="spacingAndGlyphs">throughput</text>
-<rect x="160" y="246.25" width="8.8" height="15.75" fill="#ff8700" class="b"/>
-<rect x="168.4" y="244" width="8.8" height="18.4" fill="#ff8700" class="b"/>
-<rect x="176.8" y="253" width="8.8" height="9" fill="#ff8700" class="b"/>
-<rect x="185.2" y="250.75" width="8.8" height="11.25" fill="#ff8700" class="b"/>
+<rect x="160" y="250.75" width="8.8" height="11.25" fill="#ff8700" class="b"/>
+<rect x="168.4" y="248.5" width="8.8" height="13.5" fill="#ff8700" class="b"/>
+<rect x="176.8" y="244" width="8.8" height="18.4" fill="#ff8700" class="b"/>
+<rect x="185.2" y="255.25" width="8.8" height="6.75" fill="#ff8700" class="b"/>
 <rect x="193.6" y="259.75" width="8.8" height="2.25" fill="#ff8700" class="b"/>
 <rect x="202" y="259.75" width="8.8" height="2.25" fill="#ff8700" class="b"/>
 <rect x="210.4" y="259.75" width="8.8" height="2.25" fill="#ff8700" class="b"/>
 <rect x="218.8" y="259.75" width="8.8" height="2.25" fill="#ff8700" class="b"/>
 <rect x="227.2" y="259.75" width="8.8" height="2.25" fill="#ff8700" class="b"/>
 <rect x="235.6" y="259.75" width="8.8" height="2.25" fill="#ff8700" class="b"/>
-<rect x="244" y="259.75" width="8.8" height="2.25" fill="#ff8700" class="b"/>
-<text x="269.2" y="257" fill="#4e4e4e" textLength="100.8" lengthAdjust="spacingAndGlyphs">peak 2 615/s</text>
+<text x="260.8" y="257" fill="#4e4e4e" textLength="100.8" lengthAdjust="spacingAndGlyphs">peak 2 927/s</text>
 <path d="M1021,243.8 V262.2 " stroke="#af8700" stroke-width="1.3" fill="none"/>
 <path d="M38.2,261.8 V280.2 " stroke="#af8700" stroke-width="1.3" fill="none"/>
 <path d="M1021,261.8 V280.2 " stroke="#af8700" stroke-width="1.3" fill="none"/>

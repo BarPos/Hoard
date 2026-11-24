@@ -1,3 +1,4 @@
+using Hoard.Core.Formatting;
 using Hoard.Core.Export;
 using Hoard.Tui.Browser;
 
@@ -65,7 +66,14 @@ public static partial class Screens
                 p.Text(x + 12, y++, Cells.Fit(Exporter.Describe(e.Format), fw - 12).TrimEnd(), t.Faint, Bg);
             }
         }
-        y++;
+        // The expected size of the file, from writing the export to a counter in the background.
+        string size = m.Scanning ? "after the scan"
+            : e.Size is long bytes ? "≈ " + Units.Size(bytes)
+            : e.Scope == ExportScope.Marked && m.Marks.Count == 0 ? "nothing is marked"
+            : $"{Spin[m.Tick % Spin.Length]} working it out…";
+        int sx = p.Text(x + 2, y, Cells.Fit("Size", 9), t.Muted, Bg);
+        p.Text(sx, y, Cells.Fit(size, fw - 11).TrimEnd(), e.Size is null ? t.Faint : t.Text, Bg, e.Size is null ? TextAttr.None : TextAttr.Bold);
+        y += 2;
         bool button = e.Field == 6;
         string label = e.Writing is { IsCompleted: false } ? $" {Spin[m.Tick % Spin.Length]} writing… " : " ↵ Export ";
         p.Text(x, y, label, Theme.On(button ? t.Accent : t.Accent2), button ? t.Accent : t.Accent2, TextAttr.Bold);

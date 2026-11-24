@@ -210,7 +210,7 @@ internal sealed class HoardView : Runnable
         }
         BrowserModel m = _browser.Model;
         m.Tick++;
-        if (_browser.Poll() | m.PollSnapshotSave() | _browser.PollExport() | m.PollRescan() | m.PollWatch() | _browser.PollDupVerify() || m.DupVerifying || m.SplashOpen || m.Tick == m.SplashTicks || m.Rescanning || m.View == ViewKind.Watch || m.Export is { Writing: not null } || m.Dialog is { Stage: DialogStage.Running } || m.PollJunk() | m.PollTypes()
+        if (_browser.Poll() | m.PollSnapshotSave() | _browser.PollExport() | m.PollRescan() | m.PollWatch() | _browser.PollDupVerify() || m.DupVerifying || m.SplashOpen || m.Tick == m.SplashTicks || m.Rescanning || m.View == ViewKind.Watch || m.Export is { Writing: not null } or { Sizing: not null } || m.Dialog is { Stage: DialogStage.Running } || m.PollJunk() | m.PollTypes()
             || (m.View == ViewKind.Junk && m.JunkLoading)
             || (m.View == ViewKind.Overview && (m.JunkLoading || m.TypesLoading))
             || (m.View == ViewKind.Types && (m.TypesLoading || m.TypeFiles is { Job.Result: null, Job.Error: null }))

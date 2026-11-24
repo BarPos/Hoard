@@ -63,6 +63,25 @@ public sealed class ExportViewTests(Fixture f) : IClassFixture<Fixture>, IDispos
     }
 
     [Fact]
+    public void The_dialog_shows_the_size_the_file_will_have()
+    {
+        var (m, ctl) = Make();
+        ctl.Apply(Cmd.Export, 10);
+        m.Export!.Format = ExportFormat.Csv;
+        m.Export.Path = Path.Combine(_out, "sized.csv");
+        long full = Assert.IsType<long>(ctl.WaitForExportSize());
+        Assert.Contains("Size     ≈ " + Hoard.Core.Formatting.Units.Size(full), Render(m).ToString());
+
+        m.Export.IncludeFiles = false; // fewer rows: smaller, worked out again
+        long folders = Assert.IsType<long>(ctl.WaitForExportSize());
+        Assert.True(folders < full);
+
+        ctl.Apply(Cmd.Open, 10);
+        ctl.WaitForExport();
+        Assert.Equal(folders, new FileInfo(Path.Combine(_out, "sized.csv")).Length);
+    }
+
+    [Fact]
     public void The_path_can_be_typed()
     {
         var (m, ctl) = Make();

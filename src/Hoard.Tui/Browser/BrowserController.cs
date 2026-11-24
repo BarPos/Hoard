@@ -351,6 +351,7 @@ public sealed class BrowserController(BrowserModel model, IShell shell, Deleter?
             case Cmd.Left: Step(-1); return true;
             case Cmd.Right or Cmd.Mark: Step(1); return true;
             case Cmd.Escape or Cmd.Export or Cmd.Quit:
+                e.SizeCancel?.Cancel();
                 m.Export = null;
                 return true;
             case Cmd.Open when e.Field == 5:
@@ -399,9 +400,10 @@ public sealed class BrowserController(BrowserModel model, IShell shell, Deleter?
     /// <summary>Call regularly: finishes an export. True when one just finished.</summary>
     public bool PollExport()
     {
+        bool sized = UpdateExportSize();
         if (Model.Export is not { Writing: { IsCompleted: true } t } e)
         {
-            return false;
+            return sized;
         }
         e.Writing = null;
         if (t.IsFaulted)
@@ -413,6 +415,78 @@ public sealed class BrowserController(BrowserModel model, IShell shell, Deleter?
         Model.ShowToast($"exported {Hoard.Core.Export.Exporter.Name(e.Format)} to {Rendering.Screens.Shorten(e.Path)} · {Units.Size(t.Result)} · o reveals it");
         LastExport = e.Path;
         return true;
+    }
+
+    /// <summary>
+    /// Keeps the dialog's expected file size up to date: when the options (or what's being exported) change,
+    /// the export is written again, to a stream that only counts bytes. True when a new size just arrived.
+    /// </summary>
+    private bool UpdateExportSize()
+    {
+        BrowserModel m = Model;
+        if (m.Export is not { } e)
+        {
+            return false;
+        }
+        if (m.Scanning)
+        {
+            e.Size = null; // sizes are still growing
+            return false;
+        }
+        var key = (e.Format, e.Scope, e.IncludeFiles, e.Depth, e.MinSize, m.Apparent, m.Current, m.Marks.Count,
+            m.Store.Count, m.Store.Size(NodeStore.Root), m.Types, m.Junk, m.BigOld, m.Empty, m.Dupes?.Report, m.Age);
+        if (!Equals(e.SizeKey, key))
+        {
+            e.SizeKey = key;
+            e.SizeCancel?.Cancel();
+            e.Size = null;
+            if (e.Scope == ExportScope.Marked && m.Marks.Count == 0)
+            {
+                e.Sizing = null;
+                return true;
+            }
+            var cancel = new CancellationTokenSource();
+            e.SizeCancel = cancel;
+            Hoard.Core.Export.ExportData data = m.ExportData(e.Scope);
+            Hoard.Core.Export.ExportOptions options = e.Options(m.Apparent);
+            e.Sizing = Task.Run(() =>
+            {
+                using var counter = new CountingStream(cancel.Token);
+                Hoard.Core.Export.Exporter.Write(data, options, counter);
+                return counter.Length;
+            }, cancel.Token);
+            return true;
+        }
+        if (e.Sizing is { IsCompleted: true } done)
+        {
+            e.Sizing = null;
+            e.Size = done.IsCompletedSuccessfully ? done.Result : null;
+            return true;
+        }
+        return false;
+    }
+
+    /// <summary>Waits for the expected export size (tests, screenshots).</summary>
+    public long? WaitForExportSize()
+    {
+        // Reports finishing in the meantime change what's exported, so go until the size settles.
+        for (int i = 0; i < 50 && Model.Export is { } e; i++)
+        {
+            UpdateExportSize();
+            if (e.Sizing is null)
+            {
+                break;
+            }
+            try
+            {
+                e.Sizing.Wait();
+            }
+            catch (AggregateException)
+            {
+            }
+            Thread.Sleep(10);
+        }
+        return Model.Export?.Size;
     }
 
     /// <summary>Call regularly: opens the delete dialog once the byte comparison of duplicates is done.</summary>
