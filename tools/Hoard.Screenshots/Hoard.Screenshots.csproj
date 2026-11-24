@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Renders the README and docs screenshots: real Hoard screens over a made-up home folder,
+       drawn into SVGs that look like a macOS terminal window. Run it with dotnet run (see Program.cs). -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Hoard.Core\Hoard.Core.csproj" />
+    <ProjectReference Include="..\..\src\Hoard.Platform\Hoard.Platform.csproj" />
+    <ProjectReference Include="..\..\src\Hoard.Tui\Hoard.Tui.csproj" />
+  </ItemGroup>
+</Project>

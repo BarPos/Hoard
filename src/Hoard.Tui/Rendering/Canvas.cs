@@ -157,6 +157,9 @@ public sealed class MemoryCanvas(int width, int height) : ICanvas
 
     public Style StyleAt(int x, int y) => _style[x, y];
 
+    /// <summary>The character in a cell ("" for the second half of a wide character).</summary>
+    public string Glyph(int x, int y) => _glyph[x, y];
+
     public string Row(int y)
     {
         var sb = new StringBuilder();

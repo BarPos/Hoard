@@ -90,7 +90,7 @@ public static partial class Screens
             {
                 p.Text(px, py++, Cells.Fit(line.TrimEnd('\r').Replace("\t", "  "), pw).TrimEnd(), t.Text, Bg);
             }
-            string cli = $"hoard {m.RootPath} --export {e.Format.ToString().ToLowerInvariant()}" + (e.Depth > 0 ? $" --depth {e.Depth}" : "") + " -o …";
+            string cli = $"hoard {Shorten(m.RootPath)} --export {e.Format.ToString().ToLowerInvariant()}" + (e.Depth > 0 ? $" --depth {e.Depth}" : "") + " -o …";
             p.Text(px, y0 + h - 2, Cells.Fit("CLI: " + cli, pw).TrimEnd(), t.Faint, Bg);
         }
     }
