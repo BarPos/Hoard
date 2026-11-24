@@ -16,7 +16,7 @@
 #
 #  --user    installs to ~/.local/bin (no admin rights needed)
 #  --system  installs to /usr/local/bin for all users (asks for your password via sudo)
-#  --purge   with uninstall: also remove settings and data (~/.config/hoard, ~/.local/share/hoard)
+#  --purge   with uninstall: also remove settings, snapshots and the hash cache (~/.config/hoard, ~/.local/share/hoard, ~/.cache/hoard)
 #  --yes     never ask; use defaults (user install, latest version)
 #
 #  Environment: HOARD_REPO (default BarPos/Hoard), NO_COLOR.
@@ -30,7 +30,7 @@ REPO="${HOARD_REPO:-BarPos/Hoard}"
 RELEASES_DIR="${HOARD_RELEASES_DIR:-}"
 USER_DIR="${HOARD_USER_DIR:-${HOME}/.local/bin}"
 SYSTEM_DIR="${HOARD_SYSTEM_DIR:-/usr/local/bin}"
-CONFIG_DIRS=("${HOME}/.config/hoard" "${HOME}/.local/share/hoard")
+CONFIG_DIRS=("${HOME}/.config/hoard" "${HOME}/.local/share/hoard" "${HOME}/.cache/hoard")
 
 # ── output ──────────────────────────────────────────────────────────────────
 if [ -t 2 ] && [ -z "${NO_COLOR:-}" ]; then
